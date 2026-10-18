@@ -71,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
       setUser(res.data.user);
+      setToken(res.data.token);
+      sessionStorage.setItem('connectly_token', res.data.token);
     },
     []
   );

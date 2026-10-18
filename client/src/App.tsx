@@ -11,10 +11,12 @@ import ProfilePage from './features/auth/pages/ProfilePage';
 import SearchPage from './features/auth/pages/SearchPage';
 import ConversationsList from './features/conversations/ConversationsList';
 import ConversationPage from './features/conversations/ConversationPage';
+import Navbar from './components/Navbar';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
