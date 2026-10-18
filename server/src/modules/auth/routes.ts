@@ -33,7 +33,11 @@ router.post(
       password: string;
     });
     res.cookie('token', token, COOKIE_OPTIONS);
-    res.status(201).json({ user });
+    // Return the token in the body so the client can use it to authenticate its
+    // Socket.IO connection (the httpOnly cookie is not readable by JS). The
+    // token is held in sessionStorage by the client; this is a documented
+    // trade-off required for real-time socket auth (see AI_RULES_AND_MILESTONES.md).
+    res.status(201).json({ user, token });
   })
 );
 
@@ -44,7 +48,7 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const { user, token } = await login(req.body as { email: string; password: string });
     res.cookie('token', token, COOKIE_OPTIONS);
-    res.json({ user });
+    res.json({ user, token });
   })
 );
 

@@ -12,6 +12,7 @@ import {
   sendMessage,
   type Message,
 } from './api';
+import { getSocket } from '../../lib/socket';
 
 export interface ConversationPageProps {
   children?: ReactNode;
@@ -20,13 +21,15 @@ export interface ConversationPageProps {
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<ReturnType<typeof getSocket> | null>(null);
+  const receivedMessageIds = useRef<Set<string>>(new Set());
 
   const scrollToBottom = () => {
     void messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,6 +42,7 @@ export default function ConversationPage() {
     try {
       const data = await fetchMessages(conversationId, { limit: 50 });
       setMessages(data.messages);
+      receivedMessageIds.current = new Set(data.messages.map((m) => m.id));
       void scrollToBottom();
     } catch {
       setError('Unable to load messages. Please try again.');
@@ -47,9 +51,36 @@ export default function ConversationPage() {
     }
   }, [conversationId]);
 
+  // Connect and join the conversation room when the page mounts.
   useEffect(() => {
+    if (!conversationId || !token) return;
+
+    socketRef.current = getSocket(token);
+    const socket = socketRef.current;
+    if (!socket) return;
+    socket.connect();
+    socket.emit('message:join', { conversationId });
+
+    // Receive new messages broadcast to this conversation room.
+    const onNewMessage = (message: Message) => {
+      // Dedupe: a message sent by us arrives both via the REST response and the
+      // socket broadcast. Ignore the broadcast if we already have the id.
+      if (receivedMessageIds.current.has(message.id)) return;
+      setMessages((prev) => [...prev, message]);
+      receivedMessageIds.current.add(message.id);
+      void scrollToBottom();
+    };
+    socket.on('message:new', onNewMessage);
+
     void loadMessages();
-  }, [loadMessages]);
+
+    return () => {
+      socket.off('message:new', onNewMessage);
+      socket.emit('message:leave', { conversationId });
+      // Keep the socket alive across page navigations within the app; only
+      // disconnect on logout (handled in AuthContext/logout via disconnectSocket).
+    };
+  }, [conversationId, token, loadMessages]);
 
   useEffect(() => {
     void scrollToBottom();
@@ -66,6 +97,7 @@ export default function ConversationPage() {
         textContent: input.trim(),
       });
       setMessages((prev) => [...prev, message]);
+      receivedMessageIds.current.add(message.id);
       setInput('');
       void scrollToBottom();
     } catch {
@@ -136,7 +168,7 @@ export default function ConversationPage() {
         })}
       </div>
 
-      <form onSubmit={onSend} className="mt-2 flex gap-2">
+      <form onSubmit={(e) => void onSend(e)} className="mt-2 flex gap-2">
         <input
           type="text"
           value={input}

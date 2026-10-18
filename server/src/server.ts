@@ -1,10 +1,23 @@
 import { createServer } from 'http';
+import { Server } from 'socket.io';
 import { createApp } from './app';
 import { config } from './config';
 import mongoose from 'mongoose';
+import { authenticateSocket } from './sockets/auth';
+import { registerMessageHandlers } from './sockets/messages';
 
 const app = createApp();
 const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: config.corsOrigin,
+    credentials: true,
+  },
+});
+
+io.use(authenticateSocket);
+registerMessageHandlers(io);
 
 async function start(): Promise<void> {
   await mongoose.connect(config.mongodbUri);
@@ -23,3 +36,4 @@ start().catch((err) => {
 });
 
 export default httpServer;
+export { io };
