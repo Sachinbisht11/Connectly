@@ -73,6 +73,10 @@ export async function listConversations(userId: string) {
   return conversations.map((c) => ({
     id: c._id.toString(),
     type: c.type,
+    groupName: (c as any).groupName ?? undefined,
+    groupDescription: (c as any).groupDescription ?? undefined,
+    groupAvatar: (c as any).groupAvatar ?? undefined,
+    creatorId: c.creatorId ? c.creatorId.toString() : undefined,
     participantIds: c.participantIds.map((id) => id.toString()),
     lastMessageId: c.lastMessageId?.toString() ?? undefined,
     createdAt: c.createdAt,

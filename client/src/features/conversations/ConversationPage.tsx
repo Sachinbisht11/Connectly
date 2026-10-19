@@ -5,11 +5,13 @@ import {
   useRef,
   ReactNode,
 } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import {
   fetchMessages,
   sendMessage,
+  fetchConversations,
+  type Conversation,
   type Message,
 } from './api';
 import { getSocket } from '../../lib/socket';
@@ -21,7 +23,9 @@ export interface ConversationPageProps {
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, token } = useAuth();
+  const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,21 +39,32 @@ export default function ConversationPage() {
     void messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadMessages = useCallback(async () => {
+  const loadConversation = useCallback(async () => {
     if (!conversationId) return;
     setLoading(true);
     setError('');
     try {
+      // Prefer the conversation passed in route state (from the list).
+      const stateConv = (location.state as { conversation?: Conversation })?.conversation;
+      if (stateConv && stateConv.id === conversationId) {
+        setConversation(stateConv);
+      } else {
+        // Fall back to looking it up in the conversations list (direct URL).
+        const data = await fetchConversations();
+        const found = data.find((c: Conversation) => c.id === conversationId);
+        setConversation(found || null);
+      }
+
       const data = await fetchMessages(conversationId, { limit: 50 });
       setMessages(data.messages);
       receivedMessageIds.current = new Set(data.messages.map((m) => m.id));
       void scrollToBottom();
     } catch {
-      setError('Unable to load messages. Please try again.');
+      setError('Unable to load conversation or messages. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [conversationId]);
+  }, [conversationId, location.state]);
 
   // Connect and join the conversation room when the page mounts.
   useEffect(() => {
@@ -72,7 +87,7 @@ export default function ConversationPage() {
     };
     socket.on('message:new', onNewMessage);
 
-    void loadMessages();
+    void loadConversation();
 
     return () => {
       socket.off('message:new', onNewMessage);
@@ -80,7 +95,7 @@ export default function ConversationPage() {
       // Keep the socket alive across page navigations within the app; only
       // disconnect on logout (handled in AuthContext/logout via disconnectSocket).
     };
-  }, [conversationId, token, loadMessages]);
+  }, [conversationId, token, loadConversation]);
 
   useEffect(() => {
     void scrollToBottom();
@@ -117,14 +132,31 @@ export default function ConversationPage() {
       <div className="flex items-center gap-3 mb-4 border-b border-gray-200 pb-2">
         <button
           type="button"
-          onClick={() => navigate('/search')}
+          onClick={() => navigate('/conversations')}
           className="text-sm text-blue-600 hover:text-blue-500"
         >
           ← Back to conversations
         </button>
-        <span className="text-sm font-medium text-gray-900 truncate">
-          Conversation {conversationId.slice(-6)}
-        </span>
+        {conversation && conversation.type === 'group' ? (
+          <>
+            <span className="text-xs text-blue-600 font-medium">Group</span>
+            <span className="text-sm font-medium text-gray-900 truncate">
+              {conversation.groupName || 'Unnamed group'}
+            </span>
+          </>
+        ) : (
+          <span className="text-sm font-medium text-gray-900 truncate">
+            Conversation {conversationId.slice(-6)}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => navigate(`/conversations/${conversationId}/group-info`, { state: { conversation } })}
+          disabled={!conversation}
+          className="text-xs text-blue-600 hover:text-blue-500 disabled:opacity-50 ml-auto"
+        >
+          {conversation && conversation.type === 'group' ? 'Group info' : 'Info'}
+        </button>
       </div>
 
       {error && (

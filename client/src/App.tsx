@@ -11,6 +11,8 @@ import ProfilePage from './features/auth/pages/ProfilePage';
 import SearchPage from './features/auth/pages/SearchPage';
 import ConversationsList from './features/conversations/ConversationsList';
 import ConversationPage from './features/conversations/ConversationPage';
+import CreateGroupPage from './features/conversations/CreateGroupPage';
+import GroupInfoPage from './features/conversations/GroupInfoPage';
 import Navbar from './components/Navbar';
 
 export default function App() {
@@ -42,6 +44,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ConversationsList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conversations/create-group"
+          element={
+            <ProtectedRoute>
+              <CreateGroupPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conversations/:conversationId/group-info"
+          element={
+            <ProtectedRoute>
+              <GroupInfoPage />
             </ProtectedRoute>
           }
         />

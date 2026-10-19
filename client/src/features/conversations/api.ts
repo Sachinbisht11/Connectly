@@ -52,6 +52,18 @@ export interface UpdateGroupInput {
   avatar?: string | null;
 }
 
+export interface ConversationsResponse {
+  conversations: Conversation[];
+}
+
+/**
+ * List conversations the current user participates in.
+ */
+export async function fetchConversations(): Promise<Conversation[]> {
+  const res = await api.get<ConversationsResponse>('/api/conversations');
+  return res.data.conversations;
+}
+
 /**
  * Create or find a direct conversation with another user.
  */
@@ -92,12 +104,88 @@ export async function updateGroupConversation(
   return res.data;
 }
 
+export interface GroupMember {
+  userId: string;
+  role: 'admin' | 'member';
+  joinedAt: string;
+}
+
+export interface MembersResponse {
+  members: GroupMember[];
+}
+
+export interface AddMemberInput {
+  userId: string;
+}
+
+export interface ChangeRoleInput {
+  role: 'admin' | 'member';
+}
+
 /**
- * List conversations the current user participates in.
+ * List members of a group conversation.
  */
-export async function fetchConversations(): Promise<Conversation[]> {
-  const res = await api.get<ConversationsResponse>('/api/conversations');
-  return res.data.conversations;
+export async function fetchGroupMembers(
+  conversationId: string
+): Promise<GroupMember[]> {
+  const res = await api.get<MembersResponse>(
+    `/api/conversations/${conversationId}/members`
+  );
+  return res.data.members;
+}
+
+/**
+ * Add a member to a group conversation (admin only).
+ */
+export async function addGroupMember(
+  conversationId: string,
+  input: AddMemberInput
+): Promise<{ member: GroupMember }> {
+  const res = await api.post<{ member: GroupMember }>(
+    `/api/conversations/${conversationId}/members`,
+    input
+  );
+  return res.data;
+}
+
+/**
+ * Remove a member from a group conversation (admin only, or self).
+ */
+export async function removeGroupMember(
+  conversationId: string,
+  userId: string
+): Promise<{ removed: boolean }> {
+  const res = await api.delete<{ removed: boolean }>(
+    `/api/conversations/${conversationId}/members/${userId}`
+  );
+  return res.data;
+}
+
+/**
+ * Leave a group conversation.
+ */
+export async function leaveGroupConversation(
+  conversationId: string
+): Promise<{ left: boolean }> {
+  const res = await api.post<{ left: boolean }>(
+    `/api/conversations/${conversationId}/members/leave`
+  );
+  return res.data;
+}
+
+/**
+ * Change a member's role (admin only).
+ */
+export async function changeGroupMemberRole(
+  conversationId: string,
+  userId: string,
+  input: ChangeRoleInput
+): Promise<{ member: GroupMember }> {
+  const res = await api.patch<{ member: GroupMember }>(
+    `/api/conversations/${conversationId}/members/${userId}/role`,
+    input
+  );
+  return res.data;
 }
 
 /**
