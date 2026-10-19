@@ -5,10 +5,16 @@ import { asyncHandler } from '../../middleware/asyncHandler';
 import type { AuthenticatedRequest } from '../../middleware/auth';
 import {
   createOrFindDirectConversation,
+  createGroupConversation,
   listConversations,
   getConversationAndVerifyMembership,
+  updateGroupMetadata,
 } from './service';
-import { createConversationSchema } from './schema';
+import {
+  createConversationSchema,
+  createGroupSchema,
+  updateGroupSchema,
+} from './schema';
 import { sendMessage, listMessages } from '../messages/service';
 import { sendMessageSchema, messageQuerySchema } from '../messages/schema';
 
@@ -26,6 +32,35 @@ router.post(
       participantId
     );
     res.status(created ? 201 : 200).json({ conversation, created });
+  })
+);
+
+// POST /api/conversations/group — create a new group conversation
+router.post(
+  '/group',
+  authenticate,
+  validate(createGroupSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { conversation } = await createGroupConversation(
+      (req as AuthenticatedRequest).user!.userId,
+      req.body as { name: string; description?: string; participantIds: string[] }
+    );
+    res.status(201).json({ conversation });
+  })
+);
+
+// PATCH /api/conversations/:conversationId/group — update group metadata (admin only)
+router.patch(
+  '/:conversationId/group',
+  authenticate,
+  validate(updateGroupSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { conversation } = await updateGroupMetadata(
+      req.params['conversationId'],
+      (req as AuthenticatedRequest).user!.userId,
+      req.body as { name?: string; description?: string; avatar?: string | null }
+    );
+    res.json({ conversation });
   })
 );
 

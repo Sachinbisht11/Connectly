@@ -3,6 +3,10 @@ import { api } from '../../lib/api';
 export interface Conversation {
   id: string;
   type: 'direct' | 'group';
+  groupName?: string | null;
+  groupDescription?: string | null;
+  groupAvatar?: string | null;
+  creatorId?: string | null;
   participantIds: string[];
   lastMessageId?: string | null;
   createdAt: string;
@@ -36,6 +40,18 @@ export interface MessageResponse {
   message: Message;
 }
 
+export interface CreateGroupInput {
+  name: string;
+  description?: string;
+  participantIds: string[];
+}
+
+export interface UpdateGroupInput {
+  name?: string;
+  description?: string;
+  avatar?: string | null;
+}
+
 /**
  * Create or find a direct conversation with another user.
  */
@@ -45,6 +61,33 @@ export async function createOrFindConversation(
   const res = await api.post<{ conversation: Conversation; created: boolean }>(
     '/api/conversations',
     { participantId }
+  );
+  return res.data;
+}
+
+/**
+ * Create a new group conversation.
+ */
+export async function createGroupConversation(
+  input: CreateGroupInput
+): Promise<{ conversation: Conversation }> {
+  const res = await api.post<{ conversation: Conversation }>(
+    '/api/conversations/group',
+    input
+  );
+  return res.data;
+}
+
+/**
+ * Update group metadata.
+ */
+export async function updateGroupConversation(
+  conversationId: string,
+  input: UpdateGroupInput
+): Promise<{ conversation: Conversation }> {
+  const res = await api.patch<{ conversation: Conversation }>(
+    `/api/conversations/${conversationId}/group`,
+    input
   );
   return res.data;
 }

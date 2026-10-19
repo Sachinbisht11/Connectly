@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/error';
 import authRoutes from './modules/auth/routes';
 import userRoutes from './modules/users/routes';
 import conversationRoutes from './modules/conversations/routes';
+import groupMemberRoutes from './modules/groupMembers/routes';
 
 export function createApp(): Application {
   const app = express();
@@ -34,6 +35,7 @@ export function createApp(): Application {
   app.use('/api/auth', authRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/conversations', conversationRoutes);
+  app.use('/api/conversations', groupMemberRoutes);
 
   // 404 for undefined routes
   app.use((_req, res) => {

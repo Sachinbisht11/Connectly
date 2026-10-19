@@ -1,12 +1,17 @@
 import { Conversation, type IConversation } from './model';
+import { GroupMember } from '../groupMembers/model';
 import { User } from '../auth/model';
 import { AppError } from '../../middleware/error';
-import { createConversationSchema } from './schema';
+import { createConversationSchema, createGroupSchema, updateGroupSchema } from './schema';
 
 export function conversationDTO(conv: IConversation) {
   return {
     id: conv._id.toString(),
     type: conv.type,
+    groupName: conv.groupName ?? undefined,
+    groupDescription: conv.groupDescription ?? undefined,
+    groupAvatar: conv.groupAvatar ?? undefined,
+    creatorId: conv.creatorId ? conv.creatorId.toString() : undefined,
     participantIds: conv.participantIds.map((id) => id.toString()),
     lastMessageId: conv.lastMessageId?.toString() ?? undefined,
     createdAt: conv.createdAt,
@@ -101,4 +106,108 @@ export async function getConversationAndVerifyMembership(
   }
 
   return conversation;
+}
+
+/**
+ * Check whether a user is an admin of a group conversation.
+ */
+export async function verifyGroupAdmin(
+  conversationId: string,
+  userId: string
+): Promise<IConversation> {
+  const conversation = await getConversationAndVerifyMembership(
+    conversationId,
+    userId
+  );
+
+  if (conversation.type !== 'group') {
+    throw new AppError('Not a group conversation', 400, 'NOT_A_GROUP');
+  }
+  if (!conversation.creatorId || conversation.creatorId.toString() !== userId) {
+    throw new AppError('Only the group admin can perform this action', 403, 'FORBIDDEN');
+  }
+
+  return conversation;
+}
+
+/**
+ * Create a new group conversation with the creator as an admin participant.
+ */
+export async function createGroupConversation(
+  creatorId: string,
+  data: { name: string; description?: string; participantIds: string[] }
+) {
+  const parsed = createGroupSchema.safeParse(data);
+  if (!parsed.success) {
+    throw parsed.error;
+  }
+
+  const { name, description, participantIds } = parsed.data;
+
+  if (!participantIds.some((id) => id.toString() === creatorId)) {
+    throw new AppError('The creator must be a participant', 400, 'CREATOR_MUST_BE_PARTICIPANT');
+  }
+
+  // Validate all participants exist.
+  const participants = await User.find({ _id: { $in: participantIds } });
+  if (participants.length !== participantIds.length) {
+    throw new AppError('One or more participants not found', 404, 'USER_NOT_FOUND');
+  }
+
+  const conversation = await Conversation.create({
+    type: 'group',
+    groupName: name,
+    groupDescription: description ?? null,
+    creatorId: creatorId,
+    participantIds,
+  });
+
+  // Create membership records for all participants. The creator is an admin;
+  // everyone else is a regular member.
+  await GroupMember.insertMany(
+    participantIds.map((id) => ({
+      conversationId: conversation._id,
+      userId: id,
+      role: id.toString() === creatorId ? 'admin' : 'member',
+    }))
+  );
+
+  return { conversation: conversationDTO(conversation) };
+}
+
+/**
+ * Update group metadata. Only the group admin may do this.
+ */
+export async function updateGroupMetadata(
+  conversationId: string,
+  userId: string,
+  data: { name?: string; description?: string; avatar?: string | null }
+) {
+  const parsed = updateGroupSchema.safeParse(data);
+  if (!parsed.success) {
+    throw parsed.error;
+  }
+
+  await verifyGroupAdmin(conversationId, userId);
+
+  const updates: Partial<{
+    groupName: string;
+    groupDescription: string | null;
+    groupAvatar: string | null;
+  }> = {};
+  if (data.name !== undefined) updates.groupName = data.name;
+  if (data.description !== undefined) updates.groupDescription = data.description;
+  if (data.avatar !== undefined) updates.groupAvatar = data.avatar;
+
+  const conversation = await Conversation.findByIdAndUpdate(
+    conversationId,
+    { $set: updates },
+    { new: true, runValidators: true }
+  );
+
+  if (!conversation) {
+    throw new AppError('Conversation not found', 404, 'CONVERSATION_NOT_FOUND');
+  }
+
+  return { conversation: conversationDTO(conversation) };
 }
