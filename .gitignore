@@ -40,3 +40,5 @@ coverage/
 
 # User uploads (local media storage)
 server/uploads/
+
+.vite
