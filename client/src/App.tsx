@@ -33,7 +33,7 @@ function ProtectedLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/sign-in" replace />;
   }
 
   // Determine if we should show the conversation list (middle column)
@@ -105,7 +105,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login"  element={<Navigate to="/sign-in" replace />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
 
