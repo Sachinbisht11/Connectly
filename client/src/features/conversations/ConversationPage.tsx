@@ -308,7 +308,7 @@ export default function ConversationPage() {
               </p>
             )}
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -358,7 +358,7 @@ export default function ConversationPage() {
               </div>
             </a>
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -387,7 +387,7 @@ export default function ConversationPage() {
               </p>
             )}
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -421,7 +421,7 @@ export default function ConversationPage() {
               <span className="text-[11px] text-slate-500 flex-shrink-0">2:30</span>
             </div>
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -444,7 +444,7 @@ export default function ConversationPage() {
           }`}>
             <p className="text-sm text-slate-900 whitespace-pre-wrap">{m.textContent}</p>
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>

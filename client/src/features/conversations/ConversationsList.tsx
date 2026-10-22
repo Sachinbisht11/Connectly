@@ -210,11 +210,11 @@ export default function ConversationsList() {
                         {lastMessagePreview.text}
                       </p>
                     </div>
-                    {c.type === 'group' && !isActive && (
+                    {/* {c.type === 'group' && !isActive && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
                         Group
                       </span>
-                    )}
+                    )} */}
                   </button>
                 </li>
               );
