@@ -6,15 +6,36 @@ import { sendMessage } from '../modules/messages/service';
  */
 interface MessageSendPayload {
   conversationId: string;
-  textContent: string;
+  textContent?: string;
+  media?: {
+    type?: string;
+    url?: string;
+    filename?: string;
+    originalName?: string;
+    mimeType?: string;
+    size?: number;
+  };
 }
 
 interface MessageNewPayload {
   id: string;
   conversationId: string;
   senderId: string;
+  sender?: {
+    id: string;
+    displayName: string;
+    avatar?: string | null;
+  };
   type: string;
   textContent: string;
+  media?: {
+    id: string;
+    url: string | undefined;
+    filename?: string;
+    originalName?: string;
+    mimeType?: string;
+    size?: number;
+  };
   createdAt: string;
 }
 
@@ -91,15 +112,18 @@ export function registerMessageHandlers(io: Server): void {
           const { message } = await sendMessage(
             payload.conversationId,
             userId,
-            { textContent: payload.textContent }
+            { textContent: payload.textContent ?? '' }
           );
 
+          // The message object from sendMessage already includes sender info
           const broadcast: MessageNewPayload = {
             id: message.id,
             conversationId: message.conversationId,
             senderId: message.senderId,
+            sender: message.sender,
             type: message.type,
-            textContent: message.textContent,
+            textContent: message.textContent ?? '',
+            media: message.media,
             createdAt: message.createdAt.toISOString(),
           };
 

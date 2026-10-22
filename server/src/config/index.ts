@@ -15,6 +15,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   CORS_ORIGIN: z.string().min(1, 'CORS_ORIGIN is required'),
+  UPLOAD_DIR: z.string().default('./uploads'),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -36,6 +37,7 @@ export const config = {
   jwtSecret: parsed.data.JWT_SECRET,
   jwtExpiresIn: parsed.data.JWT_EXPIRES_IN,
   corsOrigin: parsed.data.CORS_ORIGIN,
+  uploadDir: parsed.data.UPLOAD_DIR,
 } as const;
 
 export type Config = typeof config;

@@ -33,7 +33,7 @@ export default function RegisterPage() {
     setSubmitting(true);
     authRegister(data.displayName, data.email, data.password)
       .then(() => {
-        navigate('/profile');
+        navigate('/conversations');
       })
       .catch(() => {
         setError(
@@ -46,83 +46,92 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Create an account
-          </h1>
-          <p className="text-gray-600">Join Connectly today</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4">
+            <span className="text-2xl font-bold text-white">C</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Create an account</h1>
+          <p className="text-slate-500 mt-1">Join Connectly today</p>
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 mb-6 border border-red-100" role="alert">
+            {error}
+          </div>
         )}
 
         <form
           onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-          className="space-y-4"
+          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-5"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5" htmlFor="displayName">
               Display name
             </label>
             <input
               {...registerField('displayName')}
               type="text"
-              className={`mt-1 block w-full rounded-md border ${
-                errors.displayName ? 'border-red-500' : 'border-gray-300'
+              id="displayName"
+              autoComplete="name"
+              className={`w-full py-2.5 px-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                errors.displayName ? 'border-red-500' : 'border-slate-300'
               }`}
               placeholder="Alex Rivera"
             />
             {errors.displayName && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.displayName.message}
-              </p>
+              <p className="mt-1.5 text-sm text-red-600">{errors.displayName.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5" htmlFor="email">
+              Email
+            </label>
             <input
               {...registerField('email')}
               type="email"
-              className={`mt-1 block w-full rounded-md border ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
+              id="email"
+              autoComplete="email"
+              className={`w-full py-2.5 px-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                errors.email ? 'border-red-500' : 'border-slate-300'
               }`}
               placeholder="you@example.com"
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5" htmlFor="password">
               Password
             </label>
             <input
               {...registerField('password')}
               type="password"
-              className={`mt-1 block w-full rounded-md border ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
+              id="password"
+              autoComplete="new-password"
+              className={`w-full py-2.5 px-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                errors.password ? 'border-red-500' : 'border-slate-300'
               }`}
               placeholder="••••••••"
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              <p className="mt-1.5 text-sm text-red-600">{errors.password.message}</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 px-4 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create account
+            {submitting ? 'Creating account...' : 'Create account'}
           </button>
 
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-slate-600 text-center">
             Already have an account?{' '}
             <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
               Sign in

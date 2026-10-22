@@ -7,7 +7,18 @@ const objectIdSchema = z.custom<ObjectId>((val) => {
 }, 'Invalid ID');
 
 export const sendMessageSchema = z.object({
-  textContent: z.string().trim().min(1, 'Message cannot be empty').max(4000, 'Message too long'),
+  textContent: z.string().trim().max(4000, 'Message too long').default(''),
+  media: z
+    .object({
+      type: z.enum(['image', 'file', 'video']),
+      url: z.string(),
+      filename: z.string().optional(),
+      originalName: z.string().optional(),
+      mimeType: z.string().optional(),
+      size: z.number().nonnegative().optional(),
+      mediaId: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const messageQuerySchema = z.object({

@@ -1,10 +1,42 @@
 import { Conversation, type IConversation } from './model';
 import { GroupMember } from '../groupMembers/model';
 import { User } from '../auth/model';
+import { Message } from '../messages/model';
 import { AppError } from '../../middleware/error';
 import { createConversationSchema, createGroupSchema, updateGroupSchema } from './schema';
 
-export function conversationDTO(conv: IConversation) {
+export async function conversationDTO(conv: IConversation, currentUserId?: string) {
+  let otherParticipantName: string | undefined;
+  let otherParticipantAvatar: string | null | undefined;
+  let lastMessageContent: string | undefined;
+  let lastMessageTime: Date | string | undefined;
+  let lastMessageSenderId: string | undefined;
+
+  if (conv.type === 'direct' && currentUserId) {
+    // Find the other participant
+    const otherParticipantId = conv.participantIds.find(
+      (id) => id.toString() !== currentUserId
+    );
+
+    if (otherParticipantId) {
+      const otherUser = await User.findById(otherParticipantId).select('displayName avatar').lean();
+      if (otherUser) {
+        otherParticipantName = otherUser.displayName;
+        otherParticipantAvatar = otherUser.avatar ?? null;
+      }
+    }
+  }
+
+  // Fetch last message details if exists
+  if (conv.lastMessageId) {
+    const lastMessage = await Message.findById(conv.lastMessageId).select('textContent createdAt senderId').lean();
+    if (lastMessage) {
+      lastMessageContent = lastMessage.textContent;
+      lastMessageTime = lastMessage.createdAt;
+      lastMessageSenderId = lastMessage.senderId.toString();
+    }
+  }
+
   return {
     id: conv._id.toString(),
     type: conv.type,
@@ -14,8 +46,13 @@ export function conversationDTO(conv: IConversation) {
     creatorId: conv.creatorId ? conv.creatorId.toString() : undefined,
     participantIds: conv.participantIds.map((id) => id.toString()),
     lastMessageId: conv.lastMessageId?.toString() ?? undefined,
+    lastMessageContent,
+    lastMessageTime,
+    lastMessageSenderId,
     createdAt: conv.createdAt,
     updatedAt: conv.updatedAt,
+    otherParticipantName,
+    otherParticipantAvatar,
   };
 }
 
@@ -49,7 +86,7 @@ export async function createOrFindDirectConversation(
   });
 
   if (existing) {
-    return { conversation: conversationDTO(existing), created: false };
+    return { conversation: await conversationDTO(existing, currentUserId), created: false };
   }
 
   const conversation = await Conversation.create({
@@ -57,7 +94,7 @@ export async function createOrFindDirectConversation(
     participantIds: [currentUserId, participantId],
   });
 
-  return { conversation: conversationDTO(conversation), created: true };
+  return { conversation: await conversationDTO(conversation, currentUserId), created: true };
 }
 
 /**
@@ -70,18 +107,9 @@ export async function listConversations(userId: string) {
     .sort({ updatedAt: -1 })
     .lean();
 
-  return conversations.map((c) => ({
-    id: c._id.toString(),
-    type: c.type,
-    groupName: (c as any).groupName ?? undefined,
-    groupDescription: (c as any).groupDescription ?? undefined,
-    groupAvatar: (c as any).groupAvatar ?? undefined,
-    creatorId: c.creatorId ? c.creatorId.toString() : undefined,
-    participantIds: c.participantIds.map((id) => id.toString()),
-    lastMessageId: c.lastMessageId?.toString() ?? undefined,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-  }));
+  return Promise.all(
+    conversations.map((c) => conversationDTO(c as unknown as IConversation, userId))
+  );
 }
 
 /**
@@ -176,7 +204,7 @@ export async function createGroupConversation(
     }))
   );
 
-  return { conversation: conversationDTO(conversation) };
+  return { conversation: await conversationDTO(conversation) };
 }
 
 /**
@@ -213,5 +241,5 @@ export async function updateGroupMetadata(
     throw new AppError('Conversation not found', 404, 'CONVERSATION_NOT_FOUND');
   }
 
-  return { conversation: conversationDTO(conversation) };
+  return { conversation: await conversationDTO(conversation) };
 }

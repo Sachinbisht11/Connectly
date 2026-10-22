@@ -107,11 +107,17 @@ export default function GroupInfoPage() {
     }
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
   if (!conversation) {
     return (
-      <div className="max-w-md mx-auto py-8 px-4 text-center">
-        <p className="text-gray-500">Group not found.</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-slate-500">Group not found.</p>
         <button
           type="button"
           onClick={() => navigate('/conversations')}
@@ -127,37 +133,40 @@ export default function GroupInfoPage() {
   const displayName = conversation.groupName || `Conversation ${conversation.id.slice(-6)}`;
 
   return (
-    <div className="max-w-md mx-auto py-8 px-4">
+    <div className="flex-1 max-w-2xl mx-auto py-8 px-4">
       <div className="flex items-center gap-2 mb-6">
         <button
           type="button"
           onClick={() => navigate(`/conversations/${conversationId}`)}
-          className="text-sm text-blue-600 hover:text-blue-500"
+          className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          aria-label="Back"
         >
-          ← Back
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
-        <h1 className="text-xl font-bold text-gray-900">
+        <h1 className="text-xl font-bold text-slate-900">
           {isGroup ? 'Group info' : 'Conversation info'}
         </h1>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 mb-4">
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 mb-4 border border-red-100">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-4 space-y-4 mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium">
+          <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-xl font-medium text-slate-600">
             {displayName.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <h2 className="text-lg font-medium text-gray-900">{displayName}</h2>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-slate-900 truncate">{displayName}</h2>
             {conversation.groupDescription && (
-              <p className="text-sm text-gray-500">{conversation.groupDescription}</p>
+              <p className="text-sm text-slate-500 mt-0.5">{conversation.groupDescription}</p>
             )}
-            <span className="text-xs text-gray-400 uppercase tracking-wider">
+            <span className="text-xs text-slate-400 uppercase tracking-wider mt-1 inline-block">
               {isGroup ? 'Group' : 'Direct'}
             </span>
           </div>
@@ -166,46 +175,46 @@ export default function GroupInfoPage() {
         {isGroup && (
           <>
             <div className="border-t pt-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">
                 Group settings
               </h3>
               {editMode ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
                       Group name
                     </label>
                     <input
                       type="text"
                       value={groupName}
                       onChange={(e) => setGroupName(e.target.value)}
-                      className="w-full py-2 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full py-2.5 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
                       Description
                     </label>
                     <textarea
                       value={groupDescription}
                       onChange={(e) => setGroupDescription(e.target.value)}
                       rows={2}
-                      className="w-full py-2 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full py-2.5 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-2">
                     <button
                       type="button"
                       onClick={() => void onSave()}
                       disabled={saving}
-                      className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                      className="flex-1 py-2.5 px-4 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50"
                     >
                       Save
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditMode(false)}
-                      className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                      className="flex-1 py-2.5 px-4 border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                     >
                       Cancel
                     </button>
@@ -220,7 +229,7 @@ export default function GroupInfoPage() {
                     setEditMode(true);
                   }}
                   disabled={!isAdmin()}
-                  className="text-xs text-blue-600 hover:text-blue-500 disabled:opacity-50"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-500 disabled:opacity-50"
                 >
                   Edit group info
                 </button>
@@ -230,29 +239,35 @@ export default function GroupInfoPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">
           Members ({members.length})
         </h3>
         <ul className="space-y-2">
           {members.map((m) => {
             const me = m.userId === user?.id;
             const memberAdmin = m.role === 'admin';
+            const displayName = m.displayName || `User ${m.userId.slice(-6)}`;
+            const avatar = m.avatar || null;
             return (
-              <li key={m.userId} className="flex items-center justify-between p-2 rounded-md">
+              <li key={m.userId} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium">
-                    {m.userId.slice(0, 1).toUpperCase()}
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600 overflow-hidden">
+                    {avatar ? (
+                      <img src={avatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      displayName.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div>
-                    <p className="text-sm text-gray-900">{m.userId.slice(-6)}</p>
-                    {me && <span className="text-xs text-blue-600">You</span>}
+                    <p className="text-sm font-medium text-slate-900">{displayName}</p>
+                    {me && <span className="text-xs text-blue-600 font-medium">You</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-xs font-medium px-2 py-1 rounded ${
-                      memberAdmin ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                      memberAdmin ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
                     {memberAdmin ? 'Admin' : 'Member'}
@@ -261,7 +276,7 @@ export default function GroupInfoPage() {
                     <button
                       type="button"
                       onClick={() => void onChangeRole(m.userId, 'member')}
-                      className="text-xs text-gray-600 hover:text-gray-800"
+                      className="text-xs text-slate-600 hover:text-slate-800 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
                     >
                       Demote
                     </button>
@@ -270,7 +285,7 @@ export default function GroupInfoPage() {
                     <button
                       type="button"
                       onClick={() => void onChangeRole(m.userId, 'admin')}
-                      className="text-xs text-blue-600 hover:text-blue-500"
+                      className="text-xs text-blue-600 hover:text-blue-500 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                     >
                       Promote
                     </button>
@@ -279,7 +294,7 @@ export default function GroupInfoPage() {
                     <button
                       type="button"
                       onClick={() => void onRemoveMember(m.userId)}
-                      className="text-xs text-red-600 hover:text-red-700"
+                      className="text-xs text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
                     >
                       Remove
                     </button>
@@ -291,25 +306,25 @@ export default function GroupInfoPage() {
         </ul>
 
         {isGroup && isAdmin() && (
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+          <div className="mt-4 pt-4 border-t border-slate-200">
+            <h4 className="text-xs font-semibold text-slate-500 uppercase mb-2">
               Add member
             </h4>
             <div className="flex gap-2">
               <input
                 type="text"
                 placeholder="User ID"
-                className="flex-1 py-2 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                className="flex-1 py-2.5 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
               <button
                 type="button"
                 disabled={true}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-500"
+                className="px-4 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-500"
               >
                 Add
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Member search coming soon — add members by user ID for now.
             </p>
           </div>
@@ -317,7 +332,7 @@ export default function GroupInfoPage() {
       </div>
 
       {isGroup && isAdmin() && members.filter((m) => m.role === 'admin').length <= 1 && (
-        <div className="mt-3 p-3 rounded-md bg-amber-50 text-sm text-amber-700">
+        <div className="mt-3 p-3 rounded-lg bg-amber-50 text-sm text-amber-700 border border-amber-100">
           You are the last admin. Promote another member before leaving or demoting yourself.
         </div>
       )}

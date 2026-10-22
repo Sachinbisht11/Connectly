@@ -7,6 +7,8 @@ export interface GroupMemberDTO {
   userId: string;
   role: 'admin' | 'member';
   joinedAt: Date;
+  displayName?: string;
+  avatar?: string | null;
 }
 
 /**
@@ -207,11 +209,21 @@ export async function listMembers(conversationId: string, userId: string) {
     joinedAt: 1,
   });
 
+  // Fetch user info for all members
+  const userIds = [...new Set(members.map((m) => m.userId.toString()))];
+  const users = await User.find({ _id: { $in: userIds } }).select('displayName avatar').lean();
+  const userMap = new Map(users.map((u) => [u._id.toString(), { displayName: u.displayName, avatar: u.avatar }]));
+
   return {
-    members: members.map((m) => ({
-      userId: m.userId.toString(),
-      role: m.role,
-      joinedAt: m.joinedAt,
-    })),
+    members: members.map((m) => {
+      const userInfo = userMap.get(m.userId.toString());
+      return {
+        userId: m.userId.toString(),
+        role: m.role,
+        joinedAt: m.joinedAt,
+        displayName: userInfo?.displayName,
+        avatar: userInfo?.avatar ?? undefined,
+      };
+    }),
   };
 }

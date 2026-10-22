@@ -70,27 +70,30 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-8 px-4">
+    <div className="flex-1 max-w-2xl mx-auto py-8 px-4">
       <div className="flex items-center gap-2 mb-6">
         <button
           type="button"
           onClick={() => navigate('/conversations')}
-          className="text-sm text-blue-600 hover:text-blue-500"
+          className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          aria-label="Back"
         >
-          ← Back
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
-        <h1 className="text-xl font-bold text-gray-900">New group</h1>
+        <h1 className="text-xl font-bold text-slate-900">New group</h1>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 mb-4">
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 mb-4 border border-red-100">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-4 space-y-4">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             Group name
           </label>
           <input
@@ -98,12 +101,12 @@ export default function CreateGroupPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Weekend plans"
-            className="w-full py-2 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full py-2.5 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             Description (optional)
           </label>
           <textarea
@@ -111,16 +114,16 @@ export default function CreateGroupPage() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a group description..."
             rows={2}
-            className="w-full py-2 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full py-2.5 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-slate-700">
               Participants
             </label>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-slate-500">
               {selected.size} selected
             </span>
           </div>
@@ -134,22 +137,24 @@ export default function CreateGroupPage() {
                 void searchUsers();
               }}
               placeholder="Search people to add..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
             />
             <button
               type="button"
               onClick={() => void searchUsers()}
-              className="absolute left-2 top-1/2 -mt-2 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             >
-              🔍
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </button>
           </div>
 
-          {loading && <p className="text-sm text-gray-500">Searching...</p>}
+          {loading && <p className="text-sm text-slate-500">Searching...</p>}
 
-          <ul className="space-y-1 max-h-48 overflow-y-auto">
+          <ul className="space-y-1 max-h-56 overflow-y-auto border border-slate-200 rounded-lg p-2">
             {results.length === 0 && !loading && (
-              <p className="text-sm text-gray-500 text-center py-2">
+              <p className="text-sm text-slate-500 text-center py-2">
                 No results
               </p>
             )}
@@ -157,16 +162,21 @@ export default function CreateGroupPage() {
               <li
                 key={u.id}
                 onClick={() => toggleUser(u.id)}
-                className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-gray-50"
+                className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600">
                     {u.displayName.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm text-gray-900">{u.displayName}</span>
+                  <span className="text-sm text-slate-900">{u.displayName}</span>
                 </div>
                 {isSelected(u.id) ? (
-                  <span className="text-blue-600 font-medium">Added</span>
+                  <span className="text-sm font-medium text-blue-600 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Added
+                  </span>
                 ) : (
                   <button
                     type="button"
@@ -174,7 +184,7 @@ export default function CreateGroupPage() {
                       e.stopPropagation();
                       toggleUser(u.id);
                     }}
-                    className="text-xs text-blue-600 hover:text-blue-500"
+                    className="text-xs font-medium text-blue-600 hover:text-blue-500 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
                   >
                     Add
                   </button>
@@ -190,7 +200,7 @@ export default function CreateGroupPage() {
           type="button"
           onClick={() => void onCreate()}
           disabled={loading || !name.trim() || selected.size === 0}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Create group
         </button>

@@ -9,22 +9,71 @@ export interface Conversation {
   creatorId?: string | null;
   participantIds: string[];
   lastMessageId?: string | null;
+  lastMessageContent?: string;
+  lastMessageTime?: string;
+  lastMessageSenderId?: string;
   createdAt: string;
   updatedAt: string;
+  otherParticipantName?: string;
+  otherParticipantAvatar?: string | null;
 }
 
 export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  type: 'text';
+  sender?: {
+    id: string;
+    displayName: string;
+    avatar?: string | null;
+  };
+  type: 'text' | 'image' | 'file' | 'video';
   textContent: string;
+  media?: {
+    id: string;
+    url: string;
+    filename?: string;
+    originalName?: string;
+    mimeType?: string;
+    size?: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
 
 export interface SendMessageInput {
   textContent: string;
+  media?: {
+    type: 'image' | 'file' | 'video';
+    url: string;
+    filename?: string;
+    originalName?: string;
+    mimeType?: string;
+    size?: number;
+  };
+}
+
+/**
+ * Attach a media file to a conversation (multipart upload).
+ * Returns the created message including its media field.
+ */
+export async function sendMedia(
+  conversationId: string,
+  file: File
+): Promise<Message> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`/api/conversations/${conversationId}/media`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error('Upload failed');
+
+  const data = (await res.json()) as { message: Message };
+  return data.message;
 }
 
 export interface ConversationsResponse {
@@ -108,6 +157,8 @@ export interface GroupMember {
   userId: string;
   role: 'admin' | 'member';
   joinedAt: string;
+  displayName?: string;
+  avatar?: string | null;
 }
 
 export interface MembersResponse {
@@ -214,4 +265,110 @@ export async function fetchMessages(
     params: opts,
   });
   return res.data;
+}
+
+/* ────────────────────────── Scheduled Messages ────────────────────────── */
+
+export type ScheduledMessageStatus = 'scheduled' | 'processing' | 'sent' | 'failed' | 'cancelled';
+
+export interface ScheduledMessage {
+  id: string;
+  conversationId: string;
+  content: string;
+  scheduledAt: string;
+  status: ScheduledMessageStatus;
+  claimedAt?: string;
+  sentMessageId?: string;
+  attemptCount: number;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ScheduledMessagesResponse {
+  messages: ScheduledMessage[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
+export interface ScheduledMessageCounts {
+  scheduled: number;
+  processing: number;
+  sent: number;
+  failed: number;
+  cancelled: number;
+}
+
+export interface CreateScheduledMessageInput {
+  conversationId: string;
+  content: string;
+  scheduledAt: string; // ISO 8601 with timezone
+}
+
+export interface UpdateScheduledMessageInput {
+  content?: string;
+  scheduledAt?: string;
+}
+
+/**
+ * List the current user's scheduled messages.
+ */
+export async function fetchScheduledMessages(opts?: {
+  status?: ScheduledMessageStatus;
+  limit?: number;
+  cursor?: string;
+}): Promise<ScheduledMessagesResponse> {
+  const params = new URLSearchParams();
+  if (opts?.status) params.set('status', opts.status);
+  if (opts?.limit) params.set('limit', String(opts.limit));
+  if (opts?.cursor) params.set('cursor', opts.cursor);
+
+  const res = await api.get<ScheduledMessagesResponse>(`/api/scheduled-messages?${params.toString()}`);
+  return res.data;
+}
+
+/**
+ * Get scheduled message counts by status.
+ */
+export async function fetchScheduledMessageCounts(): Promise<ScheduledMessageCounts> {
+  const res = await api.get<{ counts: ScheduledMessageCounts }>('/api/scheduled-messages/counts');
+  return res.data.counts;
+}
+
+/**
+ * Create a new scheduled message.
+ */
+export async function createScheduledMessage(input: CreateScheduledMessageInput): Promise<ScheduledMessage> {
+  const res = await api.post<{ scheduledMessage: ScheduledMessage }>('/api/scheduled-messages', input);
+  return res.data.scheduledMessage;
+}
+
+/**
+ * Get a single scheduled message by ID.
+ */
+export async function fetchScheduledMessage(scheduledMessageId: string): Promise<ScheduledMessage> {
+  const res = await api.get<{ scheduledMessage: ScheduledMessage }>(`/api/scheduled-messages/${scheduledMessageId}`);
+  return res.data.scheduledMessage;
+}
+
+/**
+ * Update a scheduled message (content or scheduledAt).
+ */
+export async function updateScheduledMessage(
+  scheduledMessageId: string,
+  input: UpdateScheduledMessageInput
+): Promise<ScheduledMessage> {
+  const res = await api.patch<{ scheduledMessage: ScheduledMessage }>(
+    `/api/scheduled-messages/${scheduledMessageId}`,
+    input
+  );
+  return res.data.scheduledMessage;
+}
+
+/**
+ * Cancel a scheduled message.
+ */
+export async function cancelScheduledMessage(scheduledMessageId: string): Promise<ScheduledMessage> {
+  const res = await api.delete<{ scheduledMessage: ScheduledMessage }>(`/api/scheduled-messages/${scheduledMessageId}`);
+  return res.data.scheduledMessage;
 }

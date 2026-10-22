@@ -1,12 +1,19 @@
 import mongoose, { Schema, Model, Document, Types } from 'mongoose';
 
-export type MessageType = 'text';
+export type MessageType = 'text' | 'image' | 'file' | 'video';
 
 export interface IMessage extends Document {
   conversationId: Types.ObjectId;
   senderId: Types.ObjectId;
   type: MessageType;
   textContent: string;
+  // Optional media attachment.
+  mediaId?: Types.ObjectId;        // ref: Media
+  mediaUrl?: string;               // denormalized public URL for rendering
+  mediaFilename?: string;
+  mediaOriginalName?: string;
+  mediaMimeType?: string;
+  mediaSize?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,16 +36,22 @@ const messageSchema = new Schema<IMessage, MessageModel>(
     },
     type: {
       type: String,
-      enum: ['text'],
+      enum: ['text', 'image', 'file', 'video'],
       default: 'text',
     },
     textContent: {
       type: String,
-      required: true,
       trim: true,
-      minlength: 1,
       maxlength: 4000,
+      default: '',
     },
+    // Optional media attachment.
+    mediaId: { type: Schema.Types.ObjectId, ref: 'Media' },
+    mediaUrl: { type: String },
+    mediaFilename: { type: String },
+    mediaOriginalName: { type: String },
+    mediaMimeType: { type: String },
+    mediaSize: { type: Number, min: 0 },
   },
   { timestamps: true }
 );
