@@ -35,7 +35,7 @@ router.get(
     };
     const { messages, hasMore, nextCursor } = await listScheduledMessages(
       (req as AuthenticatedRequest).user!.userId,
-      { status: status as any, limit: limit ? parseInt(limit, 10) : 50, cursor }
+      { status: status as unknown, limit: limit ? parseInt(limit, 10) : 50, cursor }
     );
     res.json({ messages, hasMore, nextCursor });
   })
