@@ -274,8 +274,9 @@ export default function ConversationPage() {
 
   const renderMessage = (m: Message, index: number) => {
     const isMine = m.senderId === user?.id;
-    const showTimestamp = index === messages.length - 1 ||
-      (messages[index + 1]?.senderId !== m.senderId);
+    // const showTimestamp = index === messages.length - 1 ||
+    //   (messages[index + 1]?.senderId !== m.senderId);
+    const showTimestamp = true; // Always show timestamp for clarity
     const isGroup = conversation?.type === 'group';
     const senderName = m.sender?.displayName || `User ${m.senderId.slice(-6)}`;
 
@@ -562,6 +563,7 @@ export default function ConversationPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
+          {/* Group Info Button (3 dots) */}
           <button
             type="button"
             onClick={() => {
