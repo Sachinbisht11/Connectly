@@ -3,6 +3,7 @@ import { authenticate } from '../../middleware/auth';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import type { AuthenticatedRequest } from '../../middleware/auth';
+import type { ScheduledMessageStatus } from './schema';
 import {
   createScheduledMessage,
   listScheduledMessages,
@@ -24,22 +25,33 @@ const router = Router();
 router.use(authenticate);
 
 // GET /api/scheduled-messages — list user's scheduled messages
+
+
 router.get(
   '/',
   validate(listScheduledMessagesQuerySchema, 'query'),
   asyncHandler(async (req: Request, res: Response) => {
     const { status, limit, cursor } = req.query as {
-      status?: string;
+      status?: ScheduledMessageStatus;
       limit?: string;
       cursor?: string;
     };
-    const { messages, hasMore, nextCursor } = await listScheduledMessages(
-      (req as AuthenticatedRequest).user!.userId,
-      { status: status as unknown, limit: limit ? parseInt(limit, 10) : 50, cursor }
-    );
+
+    const { messages, hasMore, nextCursor } =
+      await listScheduledMessages(
+        (req as AuthenticatedRequest).user!.userId,
+        {
+          status,
+          limit: limit ? parseInt(limit, 10) : 50,
+          cursor,
+        }
+      );
+
     res.json({ messages, hasMore, nextCursor });
   })
 );
+
+
 
 // GET /api/scheduled-messages/counts — get counts by status
 router.get(
