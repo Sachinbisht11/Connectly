@@ -16,9 +16,7 @@ export const updateScheduledMessageSchema = z.object({
 });
 
 export const scheduledMessageParamsSchema = z.object({
-  params: z.object({
-    scheduledMessageId: z.string().min(1),
-  }),
+  scheduledMessageId: z.string().min(1, 'Scheduled message ID is required'),
 });
 
 

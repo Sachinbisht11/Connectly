@@ -246,3 +246,108 @@ export function ExternalLinkIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+// Plus / add
+export function PlusIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-5 h-5', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+    </svg>
+  );
+}
+
+// Search / magnifying glass
+export function SearchIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-5 h-5', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  );
+}
+
+// Edit / pencil
+export function EditIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-5 h-5', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    </svg>
+  );
+}
+
+// Trash / delete
+export function TrashIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-5 h-5', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  );
+}
+
+// Chevron left
+export function ChevronLeftIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-4 h-4', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+// Chevron right
+export function ChevronRightIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-4 h-4', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+// Paperclip / attachment
+export function PaperclipIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={clsx('w-5 h-5', className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21-3.582 4-8 4S0 9.21 0 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 4c0 2.21-3.582 4-8 4S0 13.21 0 11c0-2.21 3.582-4 8-4s8 1.79 8 4m0 4c0 2.21-3.582 4-8 4S0 17.21 0 15c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+    </svg>
+  );
+}

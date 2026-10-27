@@ -272,10 +272,8 @@ export default function ConversationPage() {
     return null;
   };
 
-  const renderMessage = (m: Message, index: number) => {
+  const renderMessage = (m: Message) => {
     const isMine = m.senderId === user?.id;
-    // const showTimestamp = index === messages.length - 1 ||
-    //   (messages[index + 1]?.senderId !== m.senderId);
     const showTimestamp = true; // Always show timestamp for clarity
     const isGroup = conversation?.type === 'group';
     const senderName = m.sender?.displayName || `User ${m.senderId.slice(-6)}`;
@@ -606,7 +604,7 @@ export default function ConversationPage() {
           </div>
         )}
 
-        {messages.map((m, index) => renderMessage(m, index))}
+        {messages.map((m) => renderMessage(m))}
         <div ref={messagesEndRef} />
       </div>
 

@@ -4,6 +4,7 @@ import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import type { AuthenticatedRequest } from '../../middleware/auth';
 import type { ScheduledMessageStatus } from './schema';
+import { AppError } from '../../middleware/error';
 import {
   createScheduledMessage,
   listScheduledMessages,
@@ -88,7 +89,7 @@ router.post(
 // GET /api/scheduled-messages/:scheduledMessageId — get a single scheduled message
 router.get(
   '/:scheduledMessageId',
-  validate(scheduledMessageParamsSchema),
+  validate(scheduledMessageParamsSchema, 'params'),
   asyncHandler(async (req: Request, res: Response) => {
     const scheduledMessage = await getScheduledMessage(
       req.params['scheduledMessageId'],
@@ -101,19 +102,34 @@ router.get(
 // PATCH /api/scheduled-messages/:scheduledMessageId — update a scheduled message
 router.patch(
   '/:scheduledMessageId',
-  validate(scheduledMessageParamsSchema),
+  validate(scheduledMessageParamsSchema, 'params'),
   asyncHandler(async (req: Request, res: Response) => {
-    // Validate body separately
     const bodyResult = updateScheduledMessageSchema.safeParse(req.body);
+
     if (!bodyResult.success) {
       throw bodyResult.error;
     }
+
     const { content, scheduledAt } = bodyResult.data;
+
+    if (content === undefined && scheduledAt === undefined) {
+      throw new AppError(
+        'At least one field (content or scheduledAt) must be provided',
+        400,
+        'EMPTY_UPDATE'
+      );
+    }
+
     const scheduledMessage = await updateScheduledMessage(
       req.params['scheduledMessageId'],
       (req as AuthenticatedRequest).user!.userId,
-      { content, scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined }
+      {
+        content,
+        scheduledAt:
+          scheduledAt !== undefined ? new Date(scheduledAt) : undefined,
+      }
     );
+
     res.json({ scheduledMessage });
   })
 );
@@ -121,7 +137,7 @@ router.patch(
 // DELETE /api/scheduled-messages/:scheduledMessageId — cancel a scheduled message
 router.delete(
   '/:scheduledMessageId',
-  validate(scheduledMessageParamsSchema),
+  validate(scheduledMessageParamsSchema,"params"),
   asyncHandler(async (req: Request, res: Response) => {
     const scheduledMessage = await cancelScheduledMessage(
       req.params['scheduledMessageId'],
