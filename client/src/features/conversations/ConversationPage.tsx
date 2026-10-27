@@ -272,10 +272,9 @@ export default function ConversationPage() {
     return null;
   };
 
-  const renderMessage = (m: Message, index: number) => {
+  const renderMessage = (m: Message) => {
     const isMine = m.senderId === user?.id;
-    const showTimestamp = index === messages.length - 1 ||
-      (messages[index + 1]?.senderId !== m.senderId);
+    const showTimestamp = true; // Always show timestamp for clarity
     const isGroup = conversation?.type === 'group';
     const senderName = m.sender?.displayName || `User ${m.senderId.slice(-6)}`;
 
@@ -308,7 +307,7 @@ export default function ConversationPage() {
               </p>
             )}
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -358,7 +357,7 @@ export default function ConversationPage() {
               </div>
             </a>
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -387,7 +386,7 @@ export default function ConversationPage() {
               </p>
             )}
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -421,7 +420,7 @@ export default function ConversationPage() {
               <span className="text-[11px] text-slate-500 flex-shrink-0">2:30</span>
             </div>
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -444,7 +443,7 @@ export default function ConversationPage() {
           }`}>
             <p className="text-sm text-slate-900 whitespace-pre-wrap">{m.textContent}</p>
             {showTimestamp && (
-              <p className={`text-[10px] mt-1 ${isMine ? 'text-green-300' : 'text-slate-400'} text-right`}>
+              <p className={`text-[10px] mt-1 ${isMine ? 'text-[#667781]-300' : 'text-[#8696A0]-400'} text-right`}>
                 {formatTime(m.createdAt)}
                 {isMine && <span className="ml-1 text-blue-500">✓✓</span>}
               </p>
@@ -562,6 +561,7 @@ export default function ConversationPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
+          {/* Group Info Button (3 dots) */}
           <button
             type="button"
             onClick={() => {
@@ -604,7 +604,7 @@ export default function ConversationPage() {
           </div>
         )}
 
-        {messages.map((m, index) => renderMessage(m, index))}
+        {messages.map((m) => renderMessage(m))}
         <div ref={messagesEndRef} />
       </div>
 

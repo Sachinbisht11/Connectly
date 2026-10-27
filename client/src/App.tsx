@@ -6,7 +6,6 @@ import {
   Outlet,
   useLocation,
 } from 'react-router-dom';
-import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
 import ProfilePage from './features/auth/pages/ProfilePage';
 import SearchPage from './features/auth/pages/SearchPage';
@@ -33,7 +32,7 @@ function ProtectedLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/sign-in" replace />;
   }
 
   // Determine if we should show the conversation list (middle column)
@@ -52,7 +51,7 @@ function ProtectedLayout() {
             </aside>
           )}
           {/* Right column: Active conversation - single Outlet */}
-          <div className={`flex-1 min-w-0 ${showConversationList ? '' : 'lg:ml-96'}`}>
+          <div className="flex-1 min-w-0">
             <Outlet />
           </div>
         </main>
@@ -105,7 +104,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login"  element={<Navigate to="/sign-in" replace />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
 

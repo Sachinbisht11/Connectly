@@ -26,7 +26,18 @@ export const updateProfileSchema = z.object({
     .max(50, 'Display name must be at most 50 characters')
     .optional(),
   about: z.string().max(500, 'About must be at most 500 characters').optional(),
-  avatar: z.string().url('Invalid avatar URL').optional().nullable(),
+  
+avatar: z
+  .string()
+  .refine(
+    (value) =>
+      value.startsWith('/api/users/avatars/') ||
+      /^https?:\/\/.+/.test(value),
+    'Invalid avatar URL'
+  )
+  .optional()
+  .nullable(),
+
 });
 
 export const searchSchema = z.object({
