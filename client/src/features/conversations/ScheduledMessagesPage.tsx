@@ -715,7 +715,7 @@ export default function ScheduledMessagesPage() {
                                 </button>
                               </>
                             )}
-                            {!isPending && (
+                            {/* {!isPending && (
                               <button
                                 type="button"
                                 onClick={() => void openEdit(msg.id)}
@@ -726,7 +726,7 @@ export default function ScheduledMessagesPage() {
                               >
                                 <EditIcon className="w-4 h-4" />
                               </button>
-                            )}
+                            )} */}
                           </div>
                         </td>
                       </tr>
