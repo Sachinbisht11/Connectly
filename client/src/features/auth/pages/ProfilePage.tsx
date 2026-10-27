@@ -49,6 +49,7 @@ export default function ProfilePage() {
 
   const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log(e.target.files?.[0])
     if (!file) return;
 
     setMessage('');
@@ -60,20 +61,46 @@ export default function ProfilePage() {
       const res = await api.post<{ user: { avatar: string | null } }>('/api/users/me/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+      console.log(res)
       // Update the user in context with the new avatar
-      updateProfile({ avatar: res.data.user.avatar });
+      await updateProfile({ avatar: res.data.user.avatar });
       setMessage('Profile picture updated successfully.');
-    } catch {
-      setMessage('Failed to upload profile picture. Please try again.');
-    } finally {
-      setUploadingAvatar(false);
-      if (e.target) e.target.value = '';
-    }
+    } 
+
+catch (error: unknown) {
+  console.error('Avatar upload error:', error);
+
+  if (error && typeof error === 'object' && 'response' in error) {
+    const err = error as {
+      response?: {
+        status?: number;
+        data?: { error?: { message?: string }; message?: string };
+      };
+      message?: string;
+    };
+
+    console.error('HTTP status:', err.response?.status);
+    console.error('Server response:', err.response?.data);
+
+    setMessage(
+      err.response?.data?.error?.message ||
+      err.response?.data?.message ||
+      err.message ||
+      'Avatar upload failed.'
+    );
+  } else {
+    console.error('Network error details:', error);
+    setMessage('Cannot connect to the backend. Check the server and API URL.');
+  }
+} finally {
+  setUploadingAvatar(false);
+}
+
+
   };
 
   const getAvatarUrl = (avatar?: string | null): string => {
-    if (!avatar) return '';
+    if (!avatar) return "";
     // If it's already a full URL or data URL, use as is
     if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
     // Otherwise, it's a relative path from our backend

@@ -16,15 +16,23 @@ export const updateScheduledMessageSchema = z.object({
 });
 
 export const scheduledMessageParamsSchema = z.object({
-  params: z.object({
-    scheduledMessageId: z.string().min(1),
-  }),
+  scheduledMessageId: z.string().min(1, 'Scheduled message ID is required'),
 });
 
+
+
 export const listScheduledMessagesQuerySchema = z.object({
-  query: z.object({
-    status: z.enum(['scheduled', 'processing', 'sent', 'failed', 'cancelled']).optional(),
-    limit: z.coerce.number().int().min(1).max(100).default(50),
-    cursor: z.string().optional(),
-  }),
+  status: z.enum([
+    'scheduled',
+    'processing',
+    'sent',
+    'failed',
+    'cancelled',
+  ]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  cursor: z.string().optional(),
 });
+
+export type ScheduledMessageStatus = z.infer<
+  typeof listScheduledMessagesQuerySchema
+>['status'];
