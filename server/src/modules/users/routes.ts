@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
-import { authenticate } from '../../middleware/auth';
-import { updateProfile, searchUsers } from '../auth/service';
-import { validate } from '../../middleware/validate';
-import { updateProfileSchema, searchSchema } from '../auth/schema';
-import { asyncHandler } from '../../middleware/asyncHandler';
-import type { AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate } from '../../middleware/auth.js';
+import { updateProfile, searchUsers } from '../auth/service.js';
+import { validate } from '../../middleware/validate.js';
+import { updateProfileSchema, searchSchema } from '../auth/schema.js';
+import { asyncHandler } from '../../middleware/asyncHandler.js';
+import type { AuthenticatedRequest } from '../../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { createReadStream, mkdirSync } from 'fs';
-import { config } from '../../config';
-import { AppError } from '../../middleware/error';
+import { config } from '../../config/index.js';
+import { AppError } from '../../middleware/error.js';
 
 const router = Router();
 

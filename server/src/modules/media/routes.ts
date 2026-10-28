@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { authenticate } from '../../middleware/auth';
-import { validate } from '../../middleware/validate';
-import { asyncHandler } from '../../middleware/asyncHandler';
-import type { AuthenticatedRequest } from '../../middleware/auth';
-import { AppError } from '../../middleware/error';
+import { authenticate } from '../../middleware/auth.js';
+import { validate } from '../../middleware/validate.js';
+import { asyncHandler } from '../../middleware/asyncHandler.js';
+import type { AuthenticatedRequest } from '../../middleware/auth.js';
+import { AppError } from '../../middleware/error.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
@@ -12,9 +12,9 @@ import {
   saveMedia,
   getMediaWithAccess,
   UPLOAD_DIR,
-} from './service';
-import { uploadMediaParamsSchema } from './schema';
-import { sendMessage } from '../messages/service';
+} from './service.js';
+import { uploadMediaParamsSchema } from './schema.js';
+import { sendMessage } from '../messages/service.js';
 
 const router = Router();
 

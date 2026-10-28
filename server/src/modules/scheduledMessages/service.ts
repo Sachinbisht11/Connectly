@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Server } from 'socket.io';
-import { ScheduledMessage, type IScheduledMessage, ScheduledMessageStatus } from './model';
-import { Conversation } from '../conversations/model';
-import { sendMessage } from '../messages/service';
-import { AppError } from '../../middleware/error';
+import { ScheduledMessage, type IScheduledMessage, ScheduledMessageStatus } from './model.js';
+import { Conversation } from '../conversations/model.js';
+import { sendMessage } from '../messages/service.js';
+import { AppError } from '../../middleware/error.js';
 import { Types } from 'mongoose';
 
 export interface ScheduledMessageDTO {

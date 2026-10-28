@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { authenticate } from '../../middleware/auth';
-import { register, login, getMe } from './service';
-import { asyncHandler } from '../../middleware/asyncHandler';
-import type { AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate } from '../../middleware/auth.js';
+import { register, login, getMe } from './service.js';
+import { asyncHandler } from '../../middleware/asyncHandler.js';
+import type { AuthenticatedRequest } from '../../middleware/auth.js';
 
 const router = Router();
 

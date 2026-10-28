@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io';
-import { sendMessage } from '../modules/messages/service';
+import { sendMessage } from '../modules/messages/service.js';
 
 /**
  * Event payloads for Socket.IO messaging events.
@@ -54,7 +54,7 @@ async function assertConversationMember(
   conversationId: string
 ): Promise<void> {
   const { getConversationAndVerifyMembership } =
-    await import('../modules/conversations/service');
+    await import('../modules/conversations/service.js');
   await getConversationAndVerifyMembership(
     conversationId,
     socket.userId!

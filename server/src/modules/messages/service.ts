@@ -1,8 +1,8 @@
-import { Message, type IMessage, MessageType } from './model';
-import { Conversation } from '../conversations/model';
-import { User } from '../auth/model';
-import { AppError } from '../../middleware/error';
-import { sendMessageSchema, messageQuerySchema } from './schema';
+import { Message, type IMessage, MessageType } from './model.js';
+import { Conversation } from '../conversations/model.js';
+import { User } from '../auth/model.js';
+import { AppError } from '../../middleware/error.js';
+import { sendMessageSchema, messageQuerySchema } from './schema.js';
 import { Types } from 'mongoose';
 
 export function messageDTO(msg: IMessage, sender?: { id: string; displayName: string; avatar?: string | null }) {

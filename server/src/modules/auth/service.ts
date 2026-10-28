@@ -1,15 +1,15 @@
-import { User, type IUser } from './model';
+import { User, type IUser } from './model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
-import { config } from '../../config';
-import { AppError } from '../../middleware/error';
+import { config } from '../../config/index.js';
+import { AppError } from '../../middleware/error.js';
 import {
   registerSchema,
   loginSchema,
   updateProfileSchema,
   searchSchema,
-} from './schema';
+} from './schema.js';
 
 const { sign } = jwt;
 

@@ -1,6 +1,6 @@
-import { Media, type IMedia } from './model';
-import { Conversation } from '../conversations/model';
-import { AppError } from '../../middleware/error';
+import { Media, type IMedia } from './model.js';
+import { Conversation } from '../conversations/model.js';
+import { AppError } from '../../middleware/error.js';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'node:url';

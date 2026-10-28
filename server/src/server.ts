@@ -1,11 +1,11 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { createApp } from './app';
-import { config } from './config';
+import { createApp } from './app.js';
+import { config } from './config/index.js';
 import mongoose from 'mongoose';
-import { authenticateSocket } from './sockets/auth';
-import { registerMessageHandlers } from './sockets/messages';
-import { processDueScheduledMessages } from './modules/scheduledMessages/service';
+import { authenticateSocket } from './sockets/auth.js';
+import { registerMessageHandlers } from './sockets/messages.js';
+import { processDueScheduledMessages } from './modules/scheduledMessages/service.js';
 
 const app = createApp();
 const httpServer = createServer(app);

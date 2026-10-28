@@ -1,9 +1,9 @@
-import { Conversation, type IConversation } from './model';
-import { GroupMember } from '../groupMembers/model';
-import { User } from '../auth/model';
-import { Message } from '../messages/model';
-import { AppError } from '../../middleware/error';
-import { createConversationSchema, createGroupSchema, updateGroupSchema } from './schema';
+import { Conversation, type IConversation } from './model.js';
+import { GroupMember } from '../groupMembers/model.js';
+import { User } from '../auth/model.js';
+import { Message } from '../messages/model.js';
+import { AppError } from '../../middleware/error.js';
+import { createConversationSchema, createGroupSchema, updateGroupSchema } from './schema.js';
 
 export async function conversationDTO(conv: IConversation, currentUserId?: string) {
   let otherParticipantName: string | undefined;

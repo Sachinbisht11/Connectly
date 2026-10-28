@@ -5,14 +5,14 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 
-import { config } from './config';
-import { errorHandler } from './middleware/error';
-import authRoutes from './modules/auth/routes';
-import userRoutes from './modules/users/routes';
-import conversationRoutes from './modules/conversations/routes';
-import groupMemberRoutes from './modules/groupMembers/routes';
-import mediaRoutes from './modules/media/routes';
-import scheduledMessageRoutes from './modules/scheduledMessages/routes';
+import { config } from './config/index.js';
+import { errorHandler } from './middleware/error.js';
+import authRoutes from './modules/auth/routes.js';
+import userRoutes from './modules/users/routes.js';
+import conversationRoutes from './modules/conversations/routes.js';
+import groupMemberRoutes from './modules/groupMembers/routes.js';
+import mediaRoutes from './modules/media/routes.js';
+import scheduledMessageRoutes from './modules/scheduledMessages/routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

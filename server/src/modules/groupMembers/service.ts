@@ -1,7 +1,7 @@
-import { Conversation } from '../conversations/model';
-import { GroupMember } from './model';
-import { User } from '../auth/model';
-import { AppError } from '../../middleware/error';
+import { Conversation } from '../conversations/model.js';
+import { GroupMember } from './model.js';
+import { User } from '../auth/model.js';
+import { AppError } from '../../middleware/error.js';
 
 export interface GroupMemberDTO {
   userId: string;

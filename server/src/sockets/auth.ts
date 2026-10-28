@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { config } from '../config';
+import { config } from '../config/index.js';
 
 /**
  * Data attached to an authenticated Socket.IO socket.

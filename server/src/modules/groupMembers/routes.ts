@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
-import { authenticate } from '../../middleware/auth';
-import { validate } from '../../middleware/validate';
-import { asyncHandler } from '../../middleware/asyncHandler';
-import type { AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate } from '../../middleware/auth.js';
+import { validate } from '../../middleware/validate.js';
+import { asyncHandler } from '../../middleware/asyncHandler.js';
+import type { AuthenticatedRequest } from '../../middleware/auth.js';
 import {
   addMember,
   removeMember,
   leaveGroup,
   changeMemberRole,
   listMembers,
-} from './service';
-import { addMemberSchema, changeRoleSchema } from './schema';
+} from './service.js';
+import { addMemberSchema, changeRoleSchema } from './schema.js';
 
 const router = Router();
 

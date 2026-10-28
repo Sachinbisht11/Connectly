@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { config } from '../config';
+import { config } from '../config/index.js';
 
 export class AppError extends Error {
   statusCode: number;

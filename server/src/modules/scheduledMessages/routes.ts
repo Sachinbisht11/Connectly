@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { authenticate } from '../../middleware/auth';
-import { validate } from '../../middleware/validate';
-import { asyncHandler } from '../../middleware/asyncHandler';
-import type { AuthenticatedRequest } from '../../middleware/auth';
-import type { ScheduledMessageStatus } from './schema';
-import { AppError } from '../../middleware/error';
+import { authenticate } from '../../middleware/auth.js';
+import { validate } from '../../middleware/validate.js';
+import { asyncHandler } from '../../middleware/asyncHandler.js';
+import type { AuthenticatedRequest } from '../../middleware/auth.js';
+import type { ScheduledMessageStatus } from './schema.js';
+import { AppError } from '../../middleware/error.js';
 import {
   createScheduledMessage,
   listScheduledMessages,
@@ -12,13 +12,13 @@ import {
   updateScheduledMessage,
   cancelScheduledMessage,
   getScheduledMessageCounts,
-} from './service';
+} from './service.js';
 import {
   createScheduledMessageSchema,
   updateScheduledMessageSchema,
   scheduledMessageParamsSchema,
   listScheduledMessagesQuerySchema,
-} from './schema';
+} from './schema.js';
 
 const router = Router();
 
