@@ -16,8 +16,17 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ): void => {
+  // Prefer the httpOnly cookie (set on login); fall back to a Bearer token
+  // from the Authorization header for clients that cannot read cookies.
+  let token: string | undefined;
   const cookies = req.cookies as Record<string, string> | undefined;
-  const token = cookies?.['token'];
+  token = cookies?.['token'];
+  if (!token) {
+    const auth = req.headers['authorization'];
+    if (auth && typeof auth === 'string' && auth.startsWith('Bearer ')) {
+      token = auth.slice(7);
+    }
+  }
   if (!token) {
     res.status(401).json({
       error: { code: 'UNAUTHENTICATED', message: 'Authentication required' },
