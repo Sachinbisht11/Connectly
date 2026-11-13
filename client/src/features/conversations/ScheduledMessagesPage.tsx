@@ -27,7 +27,6 @@ import {
   TrashIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  PaperclipIcon,
   GlobeIcon,
 } from '../../components/ui/Icons';
 
@@ -462,53 +461,60 @@ export default function ScheduledMessagesPage() {
     : undefined;
 
   return (
-    <div className="flex-1 min-w-0 bg-[#f5f5f7] text-slate-900">
+    <div className="flex-1 min-w-0 w-full bg-[#f5f5f7] text-slate-900 pb-4">
       {/* Header */}
-      <header className="px-6 pb-6 pt-8">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Scheduled Messages</h1>
-            <p className="text-slate-500 text-sm">
+      <header className="px-4 sm:px-6 lg:px-8 pt-5 sm:pt-7 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Scheduled Messages
+            </h1>
+            <p className="text-slate-500 text-sm mt-1 max-w-2xl">
               Manage and monitor messages scheduled for future automated delivery.
             </p>
           </div>
+
           <Button
             onClick={() => setCreateOpen(true)}
             disabled={creating}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-700"
           >
             <PlusIcon className="mr-2" />
             {creating ? 'Scheduling...' : 'Schedule New Message'}
           </Button>
         </div>
 
-        {/* Timezone badge */}
-        <div className="flex items-center gap-2">
-          <GlobeIcon className="w-4 h-4 text-slate-400" />
-          <span className="text-xs text-slate-500">
+        <div className="flex items-start sm:items-center gap-2 mt-4 min-w-0">
+          <GlobeIcon className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5 sm:mt-0" />
+          <span className="text-xs text-slate-500 break-all">
             {timezoneName} - {utcOffset}
           </span>
         </div>
       </header>
 
       {/* Toolbar: search + filters */}
-      <div className="px-6 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-end lg:items-center">
-          <div className="relative flex-1 max-w-md">
+      {/* Toolbar */}
+      <div className="px-4 sm:px-6 lg:px-8 mb-5">
+        <div className="flex flex-col gap-3">
+          {/* Search */}
+          <div className="relative w-full">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="search"
               value={searchQuery}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              placeholder="Search recipients, groups, or content..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(e.target.value)
+              }
+              placeholder="Search recipients or messages..."
+              className="w-full pl-10 pr-10 py-3 sm:py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Search scheduled messages"
             />
+
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
                 aria-label="Clear search"
               >
                 <TrashIcon className="w-4 h-4" />
@@ -516,35 +522,38 @@ export default function ScheduledMessagesPage() {
             )}
           </div>
 
-          <div className="flex gap-1 bg-white rounded-lg p-1 border border-slate-200 overflow-x-auto">
-            {filterItems.map((item) => {
-              const active = filter === item.key;
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => setFilter(item.key)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                    active
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  {item.label}
-                  {active && filterCounts[item.key] > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20">
-                      {filterCounts[item.key]}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          {/* Filters */}
+          <div className="w-full overflow-x-auto">
+            <div className="inline-flex min-w-full sm:min-w-0 gap-1 bg-white rounded-xl p-1 border border-slate-200">
+              {filterItems.map((item) => {
+                const active = filter === item.key;
+
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setFilter(item.key)}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${active
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                  >
+                    {item.label}
+                    {active && filterCounts[item.key] > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20">
+                        {filterCounts[item.key]}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {error && (
-          <div className="mt-3 rounded-lg bg-red-50 border border-red-100 p-3 text-sm text-red-700 flex items-center gap-2">
-            <span>{error}</span>
+          <div className="mt-3 rounded-lg bg-red-50 border border-red-100 p-3 text-sm text-red-700">
+            {error}
           </div>
         )}
       </div>
@@ -567,237 +576,377 @@ export default function ScheduledMessagesPage() {
       )}
 
       {/* Table */}
-      <div className="px-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          {loading && filteredMessages.length === 0 ? (
-            <div className="p-8">
-              <div className="space-y-3">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="h-4 bg-slate-100 rounded w-3/4 animate-pulse"></div>
-                ))}
-              </div>
-            </div>
-          ) : filteredMessages.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-12 h-12 text-slate-300 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                <ClockIcon className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">
-                {searchQuery ? 'No matching messages' : 'No scheduled messages'}
-              </h2>
-              <p className="text-slate-500 text-sm max-w-xs mx-auto mb-6">
-                {searchQuery
-                  ? 'Try adjusting your search or filters.'
-                  : 'Schedule a message from any conversation to see it here.'}
-              </p>
-              <Button onClick={() => setCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-                <PlusIcon className="mr-2" />
-                Schedule New Message
-              </Button>
-            </div>
-          ) : (
-            <>
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Recipient</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Content preview</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Delivery time</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredMessages.map((msg) => {
-                    const conv = conversations.get(msg.conversationId);
-                    const recipient = conv
-                      ? {
-                          name: conv.name,
-                          type: conv.type,
-                          avatar: conv.avatar,
-                        }
-                      : { name: 'Unknown recipient', type: 'direct' as const, avatar: undefined };
-                    const isPending =
-                      msg.status === 'scheduled' || msg.status === 'processing';
-                    const hasAttachment = false; // backend scheduled-message model has no media field
-                    return (
-                      <tr key={msg.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="relative flex-shrink-0">
-                              {recipient.avatar ? (
-                                <img
-                                  src={recipient.avatar}
-                                  alt=""
-                                  className="w-10 h-10 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600">
-                                  {recipient.name.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                              {recipient.type === 'group' && (
-                                <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center">
-                                  <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                  </svg>
-                                </span>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-slate-900 truncate">
-                                {recipient.name}
-                              </p>
-                              <p className="text-xs text-slate-500 truncate">
-                                {recipient.type === 'group' ? 'Group' : 'Direct message'}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-slate-900 truncate block max-w-md">
-                              {msg.content}
-                            </span>
-                            {hasAttachment && (
-                              <span className="flex-shrink-0 text-slate-400" title="Attachment">
-                                <PaperclipIcon className="w-4 h-4" />
-                              </span>
-                            )}
-                          </div>
-                          {msg.lastError && (
-                            <p className="text-xs text-red-600 mt-1 font-medium">
-                              Error: {msg.lastError}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-slate-900">
-                            {formatLocal(msg.scheduledAt)}
-                          </p>
-                          <p className="text-xs text-slate-500">UTC {formatUtc(msg.scheduledAt)}</p>
-                          {isPast(msg.scheduledAt) && msg.status === 'scheduled' && (
-                            <p className="text-xs text-amber-600 mt-0.5 font-medium">Due</p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${uiStatusColor(backendStatusToUI(msg.status))}`}>
-                            <span
-                              className="w-1.5 h-1.5 rounded-full"
-                              style={{ backgroundColor: 'currentColor' }}
-                            ></span>
-                            {UI_STATUS_LABELS[backendStatusToUI(msg.status)] || msg.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {isPending && !cancelling.has(msg.id) && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => void openEdit(msg.id)}
-                                  disabled={saving}
-                                  className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
-                                  aria-label="Edit scheduled message"
-                                  title="Edit"
-                                >
-                                  <EditIcon className="w-4 h-4" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => void handleCancel(msg.id)}
-                                  disabled={cancelling.has(msg.id)}
-                                  className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  aria-label="Cancel scheduled message"
-                                  title="Cancel"
-                                >
-                                  <TrashIcon className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                            {/* {!isPending && (
-                              <button
-                                type="button"
-                                onClick={() => void openEdit(msg.id)}
-                                disabled={saving}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                aria-label="View details"
-                                title="View details"
-                              >
-                                <EditIcon className="w-4 h-4" />
-                              </button>
-                            )} */}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+      
+{/* Messages */}
+<div className="px-4 sm:px-6 lg:px-8">
+  <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
 
-              {/* Pagination */}
-              <div className="border-t border-slate-100 bg-slate-50 px-4 py-3 flex items-center justify-between">
-                <div className="text-xs text-slate-500">
-                  Showing {filteredMessages.length} message
-                  {filteredMessages.length !== 1 ? 's' : ''}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPageIndex(0)}
-                    disabled={isFirstPage || loading}
-                    className="px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="First page"
-                  >
-                    <ChevronLeftIcon className="w-4 h-4" /> First
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPageIndex((i) => Math.max(i - 1, 0))}
-                    disabled={isFirstPage || loading}
-                    className="px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="Previous page"
-                  >
-                    <ChevronLeftIcon className="w-3 h-3" /> Prev
-                  </button>
-                  <span className="px-3 py-1.5 rounded-md text-sm text-slate-700 font-medium bg-white border border-slate-200">
-                    Page {pageIndex + 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (loading || isLastPage) return;
-                      void fetchPage(false);
-                    }}
-                    disabled={isLastPage || loading}
-                    className="px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="Next page"
-                  >
-                    Next <ChevronRightIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (loading || isLastPage) return;
-                      void loadLastPage();
-                    }}
-                    disabled={isLastPage || loading}
-                    className="px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="Last page"
-                  >
-                    Last <ChevronRightIcon className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+    {loading && filteredMessages.length === 0 ? (
+      <div className="p-8">
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-4 bg-slate-100 rounded w-3/4 animate-pulse"
+            />
+          ))}
         </div>
       </div>
+    ) : filteredMessages.length === 0 ? (
+      <div className="p-8 sm:p-12 text-center">
+        <div className="w-12 h-12 text-slate-300 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+          <ClockIcon className="w-6 h-6" />
+        </div>
+
+        <h2 className="text-lg font-semibold text-slate-900 mb-1">
+          {searchQuery ? 'No matching messages' : 'No scheduled messages'}
+        </h2>
+
+        <p className="text-slate-500 text-sm max-w-xs mx-auto mb-6">
+          {searchQuery
+            ? 'Try adjusting your search or filters.'
+            : 'Schedule a message from any conversation to see it here.'}
+        </p>
+
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <PlusIcon className="mr-2" />
+          Schedule New Message
+        </Button>
+      </div>
+    ) : (
+      <>
+        {/* Mobile and tablet cards */}
+        <div className="xl:hidden p-3 sm:p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {filteredMessages.map((msg) => {
+              const conv = conversations.get(msg.conversationId);
+              const recipient = conv
+                ? conv
+                : {
+                    name: 'Unknown recipient',
+                    type: 'direct' as const,
+                    avatar: undefined,
+                  };
+
+              const status = backendStatusToUI(msg.status);
+              const isPending =
+                msg.status === 'scheduled' ||
+                msg.status === 'processing';
+
+              return (
+                <article
+                  key={msg.id}
+                  className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {recipient.avatar ? (
+                        <img
+                          src={recipient.avatar}
+                          alt=""
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600 flex-shrink-0">
+                          {recipient.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">
+                          {recipient.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {recipient.type === 'group'
+                            ? 'Group'
+                            : 'Direct message'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium border whitespace-nowrap flex-shrink-0 ${uiStatusColor(status)}`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      {UI_STATUS_LABELS[status] || msg.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                      Message
+                    </p>
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap break-words line-clamp-3">
+                      {msg.content}
+                    </p>
+
+                    {msg.lastError && (
+                      <p className="text-xs text-red-600 mt-2 break-words">
+                        Error: {msg.lastError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                        Delivery time
+                      </p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {formatLocal(msg.scheduledAt)}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        UTC {formatUtc(msg.scheduledAt)}
+                      </p>
+
+                      {isPast(msg.scheduledAt) &&
+                        msg.status === 'scheduled' && (
+                          <p className="text-xs text-amber-600 mt-1 font-medium">
+                            Due
+                          </p>
+                        )}
+                    </div>
+
+                    {isPending && (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => void openEdit(msg.id)}
+                          disabled={saving}
+                          className="p-2.5 rounded-lg text-slate-600 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50"
+                          aria-label="Edit scheduled message"
+                        >
+                          <EditIcon className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void handleCancel(msg.id)}
+                          disabled={cancelling.has(msg.id)}
+                          className="p-2.5 rounded-lg text-slate-600 bg-slate-50 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                          aria-label="Cancel scheduled message"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden xl:block overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Recipient
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Content preview
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Delivery time
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-100">
+              {filteredMessages.map((msg) => {
+                const conv = conversations.get(msg.conversationId);
+                const recipient = conv
+                  ? conv
+                  : {
+                      name: 'Unknown recipient',
+                      type: 'direct' as const,
+                      avatar: undefined,
+                    };
+
+                const status = backendStatusToUI(msg.status);
+                const isPending =
+                  msg.status === 'scheduled' ||
+                  msg.status === 'processing';
+
+                return (
+                  <tr key={msg.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {recipient.avatar ? (
+                          <img
+                            src={recipient.avatar}
+                            alt=""
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600">
+                            {recipient.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {recipient.name}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {recipient.type === 'group'
+                              ? 'Group'
+                              : 'Direct message'}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-slate-900 truncate block max-w-md">
+                        {msg.content}
+                      </span>
+
+                      {msg.lastError && (
+                        <p className="text-xs text-red-600 mt-1 font-medium">
+                          Error: {msg.lastError}
+                        </p>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-slate-900">
+                        {formatLocal(msg.scheduledAt)}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        UTC {formatUtc(msg.scheduledAt)}
+                      </p>
+
+                      {isPast(msg.scheduledAt) &&
+                        msg.status === 'scheduled' && (
+                          <p className="text-xs text-amber-600 mt-0.5 font-medium">
+                            Due
+                          </p>
+                        )}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${uiStatusColor(status)}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                        {UI_STATUS_LABELS[status] || msg.status}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3 text-right">
+                      {isPending && (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => void openEdit(msg.id)}
+                            disabled={saving}
+                            className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            aria-label="Edit scheduled message"
+                            title="Edit"
+                          >
+                            <EditIcon className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => void handleCancel(msg.id)}
+                            disabled={cancelling.has(msg.id)}
+                            className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            aria-label="Cancel scheduled message"
+                            title="Cancel"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="border-t border-slate-100 bg-slate-50 px-3 sm:px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-xs text-slate-500">
+            Showing {filteredMessages.length} messages
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setPageIndex(0)}
+              disabled={isFirstPage || loading}
+              className="hidden sm:inline-flex px-2.5 py-2 rounded-lg text-xs text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+            >
+              First
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPageIndex((i) => Math.max(i - 1, 0))}
+              disabled={isFirstPage || loading}
+              className="px-3 py-2 rounded-lg text-xs text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+            >
+              <span className="inline-flex items-center gap-1">
+                <ChevronLeftIcon className="w-3 h-3" />
+                Prev
+              </span>
+            </button>
+
+            <span className="px-3 py-2 rounded-lg text-xs text-slate-700 font-semibold bg-white border border-slate-200 whitespace-nowrap">
+              Page {pageIndex + 1}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (!loading && !isLastPage) void fetchPage(false);
+              }}
+              disabled={isLastPage || loading}
+              className="px-3 py-2 rounded-lg text-xs text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+            >
+              <span className="inline-flex items-center gap-1">
+                Next
+                <ChevronRightIcon className="w-3 h-3" />
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (!loading && !isLastPage) void loadLastPage();
+              }}
+              disabled={isLastPage || loading}
+              className="hidden sm:inline-flex px-2.5 py-2 rounded-lg text-xs text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+            >
+              Last
+            </button>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+</div>
+
 
       {/* Create modal */}
       {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 p-6">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-lg w-full max-w-md p-4 sm:p-6 max-h-[90dvh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-900 mb-2">Schedule new message</h2>
             <p className="text-sm text-slate-500 mb-6">
               Choose a conversation, write your message, and pick when it should be delivered.
@@ -872,8 +1021,8 @@ export default function ScheduledMessagesPage() {
 
       {/* Edit modal */}
       {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 p-6">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-lg w-full max-w-md p-4 sm:p-6 max-h-[90dvh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-900 mb-2">
               {editingMessage ? 'Edit scheduled message' : 'Loading…'}
             </h2>

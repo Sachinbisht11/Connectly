@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,8 +6,14 @@ import { useAuth } from '../AuthContext';
 import { api } from '../../../lib/api';
 
 const schema = z.object({
-  displayName: z.string().min(2, 'Display name must be at least 2 characters').optional(),
-  about: z.string().max(500, 'About must be at most 500 characters').optional(),
+  displayName: z
+    .string()
+    .trim()
+    .min(2, 'Display name must be at least 2 characters'),
+  about: z
+    .string()
+    .max(500, 'About must be at most 500 characters')
+    .optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -31,6 +37,15 @@ export default function ProfilePage() {
     },
   });
 
+  useEffect(() => {
+  if (user) {
+    reset({
+      displayName: user.displayName ?? '',
+      about: user.about ?? '',
+    });
+  }
+}, [user, reset]);
+
   const onSubmit = (data: FormValues) => {
     setMessage('');
     setSubmitting(true);
@@ -47,64 +62,80 @@ export default function ProfilePage() {
       });
   };
 
-  const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onAvatarChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
-    console.log(e.target.files?.[0])
+
     if (!file) return;
+
+    const input = e.target;
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please select a valid image.');
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('Image size must be less than 5 MB.');
+      input.value = '';
+      return;
+    }
 
     setMessage('');
     setUploadingAvatar(true);
+
     try {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const res = await api.post<{ user: { avatar: string | null } }>('/api/users/me/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await api.post<{
+        user: { avatar: string | null };
+      }>('/api/users/me/avatar', formData);
+
+      await updateProfile({
+        avatar: res.data.user.avatar,
       });
-      console.log(res)
-      // Update the user in context with the new avatar
-      await updateProfile({ avatar: res.data.user.avatar });
+
       setMessage('Profile picture updated successfully.');
-    } 
+    } catch (error: unknown) {
+      console.error('Avatar upload error:', error);
 
-catch (error: unknown) {
-  console.error('Avatar upload error:', error);
-
-  if (error && typeof error === 'object' && 'response' in error) {
-    const err = error as {
-      response?: {
-        status?: number;
-        data?: { error?: { message?: string }; message?: string };
+      const err = error as {
+        response?: {
+          data?: {
+            error?: { message?: string };
+            message?: string;
+          };
+        };
+        message?: string;
       };
-      message?: string;
-    };
 
-    console.error('HTTP status:', err.response?.status);
-    console.error('Server response:', err.response?.data);
-
-    setMessage(
-      err.response?.data?.error?.message ||
-      err.response?.data?.message ||
-      err.message ||
-      'Avatar upload failed.'
-    );
-  } else {
-    console.error('Network error details:', error);
-    setMessage('Cannot connect to the backend. Check the server and API URL.');
-  }
-} finally {
-  setUploadingAvatar(false);
-}
-
-
+      setMessage(
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        'Avatar upload failed.'
+      );
+    } finally {
+      setUploadingAvatar(false);
+      input.value = '';
+    }
   };
 
   const getAvatarUrl = (avatar?: string | null): string => {
-    if (!avatar) return "";
-    // If it's already a full URL or data URL, use as is
-    if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
-    // Otherwise, it's a relative path from our backend
-    return avatar;
+    if (!avatar) return '';
+
+    if (
+      avatar.startsWith('http://') ||
+      avatar.startsWith('https://') ||
+      avatar.startsWith('data:')
+    ) {
+      return avatar;
+    }
+
+    return `${import.meta.env.VITE_API_URL}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
   };
 
   if (!user) {
@@ -114,46 +145,66 @@ catch (error: unknown) {
   const avatarUrl = getAvatarUrl(user.avatar);
 
   return (
-    <div className="flex-1 max-w-2xl mx-auto py-8 px-4">
+    <div className="flex-1 w-full max-w-2xl mx-auto py-6 sm:py-8 px-4">
       <h1 className="text-xl font-bold text-slate-900 mb-6">Profile</h1>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
-        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
-          <div className="relative">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={`${user.displayName}'s avatar`}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-600">
-                {user.displayName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <label
-              className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors"
-              htmlFor="avatar-upload"
-            >
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => void onAvatarChange(e)}
-                disabled={uploadingAvatar}
-              />
-            </label>
-          </div>
-          <div>
-            <p className="text-sm text-slate-500">Email</p>
-            <p className="text-slate-900 font-medium">{user.email}</p>
-          </div>
-        </div>
+        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl min-w-0">
+  <div className="relative shrink-0">
+    {avatarUrl ? (
+      <img
+        src={avatarUrl}
+        alt={`${user.displayName}'s avatar`}
+        className="w-16 h-16 rounded-full object-cover"
+      />
+    ) : (
+      <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-600">
+        {user.displayName.charAt(0).toUpperCase()}
+      </div>
+    )}
+
+    <label
+      className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors"
+      htmlFor="avatar-upload"
+    >
+      <svg
+        className="w-4 h-4 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+
+      <input
+        id="avatar-upload"
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => void onAvatarChange(e)}
+        disabled={uploadingAvatar}
+      />
+    </label>
+  </div>
+
+  <div className="flex-1 min-w-0">
+    <p className="text-sm text-slate-500">Email</p>
+    <p className="text-sm sm:text-base text-slate-900 font-medium break-all">
+      {user.email}
+    </p>
+  </div>
+</div>
 
         <form
           onSubmit={(e) => void handleSubmit(onSubmit)(e)}

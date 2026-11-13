@@ -53,9 +53,10 @@ export default function LandingNavbar() {
           </div>
 
           <div className="md:hidden flex items-center gap-3">
-            <Button className="text-blue-400 hover:text-blue-300">
+            <Link
+            to="/sign-in" className="text-blue-400 hover:text-blue-300">
               Sign in
-            </Button>
+            </Link>
           </div>
         </div>
       </div>

@@ -13,7 +13,6 @@ import {
   type GroupMember,
 } from './api';
 import { getSocket } from '../../lib/socket';
-import { useSidebar } from '../../components/Sidebar';
 
 export interface ConversationPageProps {
   children?: ReactNode;
@@ -37,7 +36,6 @@ export default function ConversationPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, token } = useAuth();
-  const { toggle: toggleSidebar } = useSidebar();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -45,6 +43,8 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [sendingMedia, setSendingMedia] = useState(false);
   const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [scheduleTime, setScheduleTime] = useState('');
@@ -55,59 +55,295 @@ export default function ConversationPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const receivedMessageIds = useRef<Set<string>>(new Set());
   const userScrolledUpRef = useRef(false);
+  const loadingOlderRef = useRef(false);
+  const hasMoreRef = useRef(true);
 
-  const scrollToBottom = () => {
-    void messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  
+const PAGE_SIZE = 50;
 
-  const handleScroll = () => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    // Consider user "at bottom" if within 100px of the bottom
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-    userScrolledUpRef.current = !isNearBottom;
-  };
+const initialLoadPromiseRef = useRef<{
+  conversationId: string;
+  promise: Promise<{
+    conversation: Conversation | null;
+    messages: Message[];
+    members: GroupMember[];
+  }>;
+} | null>(null);
 
-  const loadConversation = useCallback(async () => {
-    if (!conversationId) return;
-    setLoading(true);
-    setError('');
-    try {
-      // Prefer the conversation passed in route state (from the list).
-      const stateConv = (location.state as { conversation?: Conversation })?.conversation;
-      if (stateConv && stateConv.id === conversationId) {
-        setConversation(stateConv);
-      } else {
-        // Fall back to looking it up in the conversations list (direct URL).
-        const data = await fetchConversations();
-        const found = data.find((c: Conversation) => c.id === conversationId);
-        setConversation(found || null);
+
+useEffect(() => {
+  if (!conversationId) return;
+
+  let cancelled = false;
+
+  setLoading(true);
+  setError("");
+  setConversation(null);
+  setMessages([]);
+  setMembers([]);
+
+  // Reset pagination for the new conversation.
+  setHasMore(true);
+  hasMoreRef.current = true;
+  loadingOlderRef.current = false;
+  receivedMessageIds.current.clear();
+  userScrolledUpRef.current = false;
+
+  // Reuse an in-flight request during React Strict Mode's
+  // development effect cleanup/setup cycle.
+  let pending = initialLoadPromiseRef.current;
+
+  if (!pending || pending.conversationId !== conversationId) {
+    const promise = (async () => {
+      let resolvedConversation = (
+        location.state as { conversation?: Conversation }
+      )?.conversation;
+
+      if (resolvedConversation?.id !== conversationId) {
+        const conversations = await fetchConversations();
+
+        resolvedConversation = conversations.find(
+          (item: Conversation) => item.id === conversationId
+        ) || null;
       }
 
-      const data = await fetchMessages(conversationId, { limit: 50 });
-      setMessages(data.messages);
-      receivedMessageIds.current = new Set(data.messages.map((m) => m.id));
-      // Reset scroll tracking on initial load
-      userScrolledUpRef.current = false;
+      const data = await fetchMessages(conversationId, {
+        limit: PAGE_SIZE,
+      });
 
-      // Fetch group members if it's a group
-      if (conversation?.type === 'group') {
+      if (!Array.isArray(data.messages)) {
+        throw new Error("Invalid messages API response");
+      }
+
+      let groupMembers: GroupMember[] = [];
+
+      if (resolvedConversation?.type === "group") {
         try {
-          const membersData = await fetchGroupMembers(conversationId);
-          setMembers(membersData);
+          groupMembers = await fetchGroupMembers(conversationId);
         } catch {
-          // Ignore member fetch errors
+          // Member loading should not prevent messages from appearing.
         }
       }
 
-      void scrollToBottom();
-    } catch {
-      setError('Unable to load conversation or messages. Please try again.');
-    } finally {
+      return {
+        conversation: resolvedConversation,
+        messages: data.messages,
+        members: groupMembers,
+      };
+    })();
+
+    pending = {
+      conversationId,
+      promise,
+    };
+
+    initialLoadPromiseRef.current = pending;
+  }
+
+  const currentPromise = pending.promise;
+
+  currentPromise
+    .then((result) => {
+      if (cancelled) return;
+
+      setConversation(result.conversation);
+      setMessages(result.messages);
+      setMembers(result.members);
+
+      receivedMessageIds.current = new Set(
+        result.messages.map((message) => message.id)
+      );
+
+      const moreAvailable = result.messages.length >= PAGE_SIZE;
+
+      setHasMore(moreAvailable);
+      hasMoreRef.current = moreAvailable;
+
+      // Scroll to the latest message after rendering.
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+
+        const container = messagesContainerRef.current;
+
+        container?.scrollTo({
+          top: container.scrollHeight,
+        });
+      });
+    })
+    .catch((error) => {
+      if (cancelled) return;
+
+      console.error("Conversation loading failed:", error);
+
+      setError("Unable to load conversation or messages.");
+    })
+    .finally(() => {
+      if (cancelled) return;
+
       setLoading(false);
+
+      if (
+        initialLoadPromiseRef.current?.promise === currentPromise
+      ) {
+        initialLoadPromiseRef.current = null;
+      }
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, [conversationId, location.state]);
+
+
+
+const loadOlderMessages = async () => {
+  if (
+    !conversationId ||
+    loadingOlderRef.current ||
+    !hasMoreRef.current
+  ) {
+    return;
+  }
+
+  const container = messagesContainerRef.current;
+  const oldestMessage = messages[0];
+
+  if (!container || !oldestMessage) {
+    setHasMore(false);
+    hasMoreRef.current = false;
+    return;
+  }
+
+  loadingOlderRef.current = true;
+  setLoadingOlder(true);
+
+  const previousScrollHeight = container.scrollHeight;
+  const previousScrollTop = container.scrollTop;
+
+  try {
+    const data = await fetchMessages(conversationId, {
+      limit: PAGE_SIZE,
+      before: oldestMessage.createdAt,
+    });
+
+    const olderMessages = data.messages || [];
+
+    // No more history: stop future requests.
+    if (olderMessages.length === 0) {
+      hasMoreRef.current = false;
+      setHasMore(false);
+      return;
     }
-  }, [conversationId, location.state, conversation]);
+
+    // Avoid duplicate messages.
+    const uniqueMessages = olderMessages.filter(
+      (message: Message) => !receivedMessageIds.current.has(message.id)
+    );
+
+    uniqueMessages.forEach((message: Message) => {
+      receivedMessageIds.current.add(message.id);
+    });
+
+    if (uniqueMessages.length === 0 || olderMessages.length < PAGE_SIZE) {
+      hasMoreRef.current = false;
+      setHasMore(false);
+    }
+
+    if (uniqueMessages.length > 0) {
+      setMessages((previous) => [
+        ...uniqueMessages,
+        ...previous,
+      ]);
+
+      requestAnimationFrame(() => {
+        const updatedContainer = messagesContainerRef.current;
+
+        if (updatedContainer) {
+          updatedContainer.scrollTop =
+            updatedContainer.scrollHeight -
+            previousScrollHeight +
+            previousScrollTop;
+        }
+      });
+    }
+  } catch {
+    setError("Unable to load older messages.");
+  } finally {
+    loadingOlderRef.current = false;
+    setLoadingOlder(false);
+  }
+};
+
+  const scrollToBottom = () => {
+  const container = messagesContainerRef.current;
+
+  if (container) {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+};
+
+  
+const handleScroll = () => {
+  const container = messagesContainerRef.current;
+  if (!container) return;
+
+  const { scrollTop, scrollHeight, clientHeight } = container;
+
+  // Track whether the user is near the bottom.
+  const isNearBottom =
+    scrollHeight - scrollTop - clientHeight < 100;
+
+  userScrolledUpRef.current = !isNearBottom;
+
+  // Fetch older messages only when reaching the top.
+  if (scrollTop <= 50 && hasMoreRef.current && !loadingOlderRef.current) {
+    void loadOlderMessages();
+  }
+};
+
+
+  // const loadConversation = useCallback(async () => {
+  //   if (!conversationId) return;
+  //   setLoading(true);
+  //   setError('');
+  //   try {
+  //     // Prefer the conversation passed in route state (from the list).
+  //     const stateConv = (location.state as { conversation?: Conversation })?.conversation;
+  //     if (stateConv && stateConv.id === conversationId) {
+  //       setConversation(stateConv);
+  //     } else {
+  //       // Fall back to looking it up in the conversations list (direct URL).
+  //       const data = await fetchConversations();
+  //       const found = data.find((c: Conversation) => c.id === conversationId);
+  //       setConversation(found || null);
+  //     }
+
+  //     const data = await fetchMessages(conversationId, { limit: 50 });
+  //     setMessages(data.messages);
+  //     receivedMessageIds.current = new Set(data.messages.map((m) => m.id));
+  //     // Reset scroll tracking on initial load
+  //     userScrolledUpRef.current = false;
+
+  //     // Fetch group members if it's a group
+  //     if (conversation?.type === 'group') {
+  //       try {
+  //         const membersData = await fetchGroupMembers(conversationId);
+  //         setMembers(membersData);
+  //       } catch {
+  //         // Ignore member fetch errors
+  //       }
+  //     }
+
+  //     void scrollToBottom();
+  //   } catch {
+  //     setError('Unable to load conversation or messages. Please try again.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [conversationId, location.state, conversation]);
 
   // Connect and join the conversation room when the page mounts.
   useEffect(() => {
@@ -133,7 +369,7 @@ export default function ConversationPage() {
     };
     socket.on('message:new', onNewMessage);
 
-    void loadConversation();
+    
 
     return () => {
       socket.off('message:new', onNewMessage);
@@ -141,7 +377,7 @@ export default function ConversationPage() {
       // Keep the socket alive across page navigations within the app; only
       // disconnect on logout (handled in AuthContext/logout via disconnectSocket).
     };
-  }, [conversationId, token, loadConversation]);
+  }, [conversationId, token]);
 
   useEffect(() => {
     // Only auto-scroll if user is at or near the bottom
@@ -478,20 +714,10 @@ export default function ConversationPage() {
 
   return (
     <>
-      <div className="flex flex-col h-screen bg-white min-w-0">
+      <div className="flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-white min-w-0">
       {/* Conversation Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white flex-shrink-0">
+      <header className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white">
         <div className="flex items-center gap-3 min-w-0">
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors flex-shrink-0 lg:hidden"
-            aria-label="Open sidebar"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
           <button
             type="button"
             onClick={() => navigate('/conversations')}
@@ -525,17 +751,21 @@ export default function ConversationPage() {
           <div className="min-w-0">
             <p className="text-base font-semibold text-slate-900 truncate">{displayName}</p>
             {conversation?.type === 'group' && members.length > 0 && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-xs text-slate-500">{members.length} members</span>
-                <div className="flex -space-x-2 ml-1">
-                  {participantAvatars}
-                  {members.length > 4 && (
-                    <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[10px] font-medium text-blue-700">
-                      +{members.length - 4}
-                    </div>
-                  )}
+                <div className="flex flex-col items-start gap-1 mt-0.5">
+                  <span className="text-xs text-slate-500 whitespace-nowrap">
+                    {members.length} members
+                  </span>
+
+                  <div className="flex -space-x-2">
+                    {participantAvatars}
+
+                    {members.length > 4 && (
+                      <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[10px] font-medium text-blue-700">
+                        +{members.length - 4}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
             )}
             {conversation?.type !== 'group' && (
               <p className="text-xs text-slate-500 truncate mt-0.5">{displaySubtitle}</p>
@@ -584,15 +814,15 @@ export default function ConversationPage() {
 
       {/* Messages Area */}
       <div
-        ref={messagesContainerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4 space-y-1 bg-slate-50 min-h-0"
-      >
-        {loading && (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        )}
+  ref={messagesContainerRef}
+  onScroll={handleScroll}
+  className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-1 bg-slate-50"
+>
+  {loading && (
+  <div className="flex justify-center py-8">
+    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+  </div>
+)}
 
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center flex-1 min-h-0 text-slate-400">
@@ -615,7 +845,7 @@ export default function ConversationPage() {
       )}
 
       {/* Message Composer */}
-      <div className="border-t border-slate-200 bg-white p-4 flex-shrink-0">
+      <div className="flex-shrink-0 border-t border-slate-200 bg-white p-4">
         <div className="flex items-end gap-2">
           <label className="cursor-pointer flex-shrink-0" style={{ display: 'contents' }}>
             <button
